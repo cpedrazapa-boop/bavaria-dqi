@@ -1,0 +1,24 @@
+{
+  "name": "Bavaria Novedades DQI",
+  "short_name": "DQI Bavaria",
+  "description": "Gestión de Novedades DQI - Bavaria",
+  "start_url": "/novedades-logistica.html",
+  "display": "standalone",
+  "background_color": "#FBF8F8",
+  "theme_color": "#E30613",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

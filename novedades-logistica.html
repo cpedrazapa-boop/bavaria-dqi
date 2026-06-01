@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Bavaria - Novedades DQI</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#E30613">
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('sw.js').then(function(reg){
+      console.log('SW registrado:', reg.scope);
+    }).catch(function(e){console.log('SW error:',e);});
+  });
+}
+</script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#FBF8F8;--surface:#fff;--border:#EDD5D5;--border2:#DDB8B8;
+  --text:#1a0808;--text2:#6b3333;--text3:#9b7070;
+  --blue:#E30613;--blue-bg:#FDECEC;--blue-text:#9E0000;
+  --green:#3B6D11;--green-bg:#EAF3DE;
+  --red:#C8A84B;--red-bg:#FDF5E0;--red-text:#7A6020;
+  --amber:#C8A84B;--amber-bg:#FDF5E0;--amber-text:#7A6020;
+  --purple:#8B0000;--purple-bg:#FDEAEA;--purple-text:#6B0000;
+  --gray-bg:#D3D1C7;--gray-text:#444441;
+  --teal:#0D7E6E;--teal-bg:#E0F5F2;
+  --bav-red:#E30613;--bav-gold:#C8A84B;
+  --radius:12px;--radius-sm:8px}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.role-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.role-card{background:var(--surface);border:1px solid var(--border);border-top:4px solid var(--bav-gold);border-radius:var(--radius);padding:28px 24px;width:100%;max-width:360px}
+.role-logo{font-size:20px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.role-sub{font-size:13px;color:var(--text2);margin-bottom:24px}
+.role-btn{width:100%;padding:13px 16px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);cursor:pointer;display:flex;align-items:center;gap:12px;margin-bottom:10px;text-align:left}
+.role-btn:active{background:var(--bg)}
+.role-btn:hover{border-color:var(--bav-gold)}
+.role-icon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.role-name{font-size:14px;font-weight:600;color:var(--text)}
+.role-desc{font-size:11px;color:var(--text2);margin-top:2px}
+.topbar{background:var(--surface);border-bottom:3px solid var(--bav-red);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:54px;position:sticky;top:0;z-index:50}
+.topbar-left{display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden}
+.topbar-title{font-size:15px;font-weight:700}
+.role-tag{font-size:11px;color:var(--text2);background:var(--bg);padding:2px 10px;border-radius:20px;border:1px solid var(--border);white-space:nowrap;max-width:160px;overflow:hidden;text-overflow:ellipsis}
+.icon-btn{background:none;border:none;cursor:pointer;color:var(--text2);padding:8px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.notif-panel{display:none;position:fixed;top:54px;right:8px;z-index:200;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:14px;width:290px;max-height:320px;overflow-y:auto;box-shadow:0 4px 20px rgba(0,0,0,.12)}
+.notif-item{padding:8px 0;border-bottom:1px solid var(--border)}
+.notif-item:last-child{border-bottom:none}
+.notif-msg{font-size:13px;color:var(--text)}.notif-ts{font-size:11px;color:var(--text3);margin-top:2px}
+.bottom-nav{display:none}
+.nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;font-size:10px;color:var(--text2);border:none;background:none;padding:8px 0;position:relative}
+.nav-tab.active{color:var(--bav-red)}.nav-tab i{font-size:22px}
+.nav-badge{position:absolute;top:6px;right:calc(50% - 20px);background:var(--bav-red);color:#fff;font-size:9px;border-radius:10px;padding:1px 5px;font-weight:700;display:none}
+.content{padding:16px;padding-bottom:24px}
+.section-title{font-size:16px;font-weight:700;margin-bottom:14px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center}
+.stat-num{font-size:26px;font-weight:700}.stat-label{font-size:11px;color:var(--text2);margin-top:2px}
+.nov-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px;cursor:pointer;-webkit-tap-highlight-color:rgba(0,0,0,.05)}
+.nov-card:active{background:var(--bg)}
+.nov-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px}
+.nov-id{font-size:11px;color:var(--text3);font-family:monospace}
+.pill{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;white-space:nowrap}
+.s-pendiente{background:var(--amber-bg);color:var(--amber)}
+.s-aprobado_bavaria{background:#FDECEC;color:var(--bav-red)}
+.s-aprobado_facturacion{background:var(--green-bg);color:var(--green)}
+.s-rechazado{background:var(--red-bg);color:var(--red)}
+.s-en_ol{background:var(--teal-bg);color:var(--teal)}
+.s-en_almacen{background:var(--purple-bg);color:var(--purple)}
+.s-cerrado{background:var(--gray-bg);color:var(--gray-text)}
+.nov-cliente{font-size:15px;font-weight:600}
+.nov-meta{font-size:12px;color:var(--text2);margin-top:4px;display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.mtag{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--amber-bg);color:var(--amber)}
+.nov-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.fsec{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px}
+.fsec-t{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px}
+.fg{margin-bottom:14px}
+label{font-size:13px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px}
+input,select,textarea{width:100%;padding:11px 13px;border:1px solid var(--border2);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);font-size:15px;font-family:inherit;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--bav-red)}
+input[readonly]{background:var(--blue-bg);color:var(--blue-text);font-weight:600}
+textarea{resize:vertical;min-height:72px}
+.req{color:var(--red);margin-left:2px}
+.sku-ok{margin-top:8px;padding:10px 12px;background:var(--green-bg);border:1px solid #C0DD97;border-radius:var(--radius-sm);display:none}
+.sku-ok-n{font-weight:700;color:#27500A;font-size:13px}.sku-ok-f{color:var(--green);font-size:12px;margin-top:2px}
+.sku-err{margin-top:8px;padding:8px 12px;background:var(--red-bg);border:1px solid #F7C1C1;border-radius:var(--radius-sm);font-size:13px;color:var(--red);display:none}
+.mg{display:flex;flex-direction:column;gap:8px}
+.mi{display:flex;align-items:center;gap:12px;padding:12px;border:2px solid var(--border);border-radius:var(--radius-sm);cursor:pointer}
+.mi.sel{border-color:var(--blue);background:var(--blue-bg)}
+.mi input[type=radio]{width:18px;height:18px;flex-shrink:0;accent-color:var(--blue)}
+.mi label{font-size:14px;font-weight:500;cursor:pointer;margin:0;color:var(--text)}
+.toggle-row{display:flex;gap:10px;margin-top:6px}
+.toggle-opt{flex:1;padding:12px;border:2px solid var(--border);border-radius:var(--radius-sm);text-align:center;cursor:pointer;font-size:15px;font-weight:600;color:var(--text2)}
+.toggle-opt.sel-si{border-color:var(--green);background:var(--green-bg);color:var(--green)}
+.toggle-opt.sel-no{border-color:var(--red);background:var(--red-bg);color:var(--red)}
+.btn{width:100%;padding:14px;border-radius:var(--radius-sm);font-size:15px;font-weight:700;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn:active{opacity:.8}
+.btn-p{background:var(--bav-red);color:#fff}.btn-s{background:var(--green);color:#fff}.btn-d{background:var(--red);color:#fff}.btn-t{background:var(--teal);color:#fff}
+.bcol{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+.brow{display:flex;gap:10px;margin-top:16px}.brow .btn{flex:1}
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;overflow-y:auto;padding:20px 0;display:none}
+.modal-box{background:var(--surface);border-radius:var(--radius);margin:auto;width:calc(100% - 32px);max-width:560px;padding:20px 16px 32px;position:relative}
+.modal-close{position:absolute;top:16px;right:16px;background:var(--bg);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--text2)}
+.fr{display:flex;justify-content:space-between;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--border)}
+.fr:last-child{border-bottom:none}
+.fk{font-size:13px;color:var(--text2);flex-shrink:0;margin-right:12px}
+.fv{font-size:13px;font-weight:600;text-align:right;max-width:65%;word-break:break-word}
+.hdiv{height:1px;background:var(--border);margin:16px 0}
+.tli{display:flex;gap:12px;margin-bottom:14px}
+.tld{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.cv{background:var(--green)}.cr{background:var(--red)}.cn{background:var(--amber)}.cm{background:var(--purple)}.ca{background:var(--blue)}.ct{background:var(--teal)}
+.tla{font-size:13px;font-weight:600}.tlm{font-size:12px;color:var(--text2)}.tln{font-size:12px;color:var(--text2);margin-top:2px;font-style:italic}
+.stps{display:flex;align-items:center;gap:4px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px}
+.stp{font-size:10px;padding:4px 8px;border-radius:20px;background:var(--bg);color:var(--text2);border:1px solid var(--border);white-space:nowrap}
+.stp.done{background:var(--green-bg);color:var(--green);border-color:#C0DD97}
+.stp.active{background:var(--blue-bg);color:var(--blue-text);border-color:#B5D4F4;font-weight:700}
+.stp.blocked{background:var(--red-bg);color:var(--red);border-color:#F7C1C1}
+.sarr{font-size:12px;color:var(--text3)}
+.empty{text-align:center;padding:48px 20px;color:var(--text2);font-size:14px}
+.foto-viewer{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:999;display:none;align-items:center;justify-content:center;flex-direction:column}
+.foto-viewer img{max-width:100%;max-height:85vh;object-fit:contain;border-radius:8px}
+.foto-viewer-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.2);border:none;color:#fff;width:40px;height:40px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.foto-viewer-nav{display:flex;gap:16px;margin-top:16px}
+.foto-viewer-nav button{background:rgba(255,255,255,.2);border:none;color:#fff;padding:8px 20px;border-radius:20px;font-size:14px;cursor:pointer}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border2);background:transparent;transition:background .15s}
+.pin-dot.filled{background:var(--bav-red);border-color:var(--bav-red)}
+.pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:220px;margin:0 auto}
+.pin-btn{padding:16px;border:1px solid var(--border2);border-radius:var(--radius-sm);background:var(--surface);font-size:20px;font-weight:600;cursor:pointer;color:var(--text);transition:background .1s}
+.pin-btn:active{background:var(--bg)}
+.pin-clear{font-size:18px;color:var(--text2)}
+.pin-ok{background:var(--bav-red);color:#fff;border-color:var(--bav-red);font-size:18px}
+.pin-ok:active{opacity:.8}
+.user-btn{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);cursor:pointer;text-align:left;width:100%;transition:border-color .15s}
+.user-btn:hover{border-color:var(--bav-gold)}
+.user-btn:active{background:var(--bg)}
+.user-avatar{width:38px;height:38px;border-radius:50%;background:var(--bav-red);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0}
+.user-name{font-size:14px;font-weight:600;color:var(--text)}
+.user-rol{font-size:11px;color:var(--text2);margin-top:2px}
+.foto-zone{border:2px dashed var(--border2);border-radius:var(--radius-sm);padding:20px;text-align:center;cursor:pointer;margin-top:8px;transition:border-color .15s}
+.foto-zone:hover{border-color:var(--bav-red)}
+.foto-zone i{font-size:32px;color:var(--text3);display:block;margin-bottom:6px}
+.foto-zone p{font-size:13px;color:var(--text2)}
+.foto-zone small{font-size:11px;color:var(--text3)}
+.foto-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.foto-item{position:relative;aspect-ratio:1;border-radius:var(--radius-sm);overflow:hidden;background:var(--bg)}
+.foto-item img{width:100%;height:100%;object-fit:cover}
+.foto-del{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.65);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.foto-thumb{border-radius:var(--radius-sm);overflow:hidden;aspect-ratio:1;cursor:pointer;display:inline-block}
+.foto-thumb img{width:100%;height:100%;object-fit:cover}
+.ev-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.dash-header{display:flex;align-items:center;gap:14px;margin-bottom:20px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+.dash-role-icon{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.dash-bienvenida{font-size:12px;color:var(--text2);margin-bottom:2px}
+.dash-rolename{font-size:17px;font-weight:700;color:var(--text)}
+.dash-alert{background:var(--amber-bg);border:1px solid #F0C97A;border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:14px;font-size:13px;color:var(--amber);display:flex;align-items:center;gap:8px}
+.dash-actions{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.dash-action-btn{flex:1;min-width:140px;padding:14px 12px;border:1.5px solid var(--border2);border-radius:var(--radius);background:var(--surface);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--text2);position:relative;transition:all .15s}
+.dash-action-btn:active{opacity:.8}
+.dash-action-btn i{font-size:24px}
+.dash-action-btn.primary{background:var(--bav-red);color:#fff;border-color:var(--bav-red)}
+.dash-action-btn.primary i{color:#fff}
+.dash-badge{position:absolute;top:8px;right:8px;background:#E24B4A;color:#fff;font-size:10px;border-radius:10px;padding:1px 6px;font-weight:700}
+.dash-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px}
+.dash-stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 8px;text-align:center;cursor:pointer;transition:border-color .15s}
+.dash-stat:hover{border-color:var(--border2)}
+.dash-stat.warn{border-left:3px solid var(--bav-gold)}
+.dash-stat.info{border-left:3px solid var(--blue)}
+.dash-stat.ok{border-left:3px solid var(--green)}
+.dash-stat-num{font-size:22px;font-weight:700}
+.dash-stat-label{font-size:10px;color:var(--text2);margin-top:2px}
+.dash-section-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.dash-pend-dot{width:8px;height:8px;background:var(--bav-red);border-radius:50%;flex-shrink:0;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.dash-nov-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--bav-red);border-radius:var(--radius);padding:14px;margin-bottom:10px;cursor:pointer;transition:border-color .15s}
+.dash-nov-card:hover{border-color:var(--amber)}
+.dash-nov-card:active{background:var(--bg)}
+.dash-ver-mas{text-align:center;padding:10px;font-size:13px;color:var(--blue);cursor:pointer;font-weight:600}
+.dash-empty{text-align:center;padding:32px 20px;color:var(--text2);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius)}
+.dash-empty i{font-size:40px;color:var(--green);display:block;margin-bottom:8px}
+.fdate-btn{padding:6px 14px;border:1px solid var(--border2);border-radius:20px;background:var(--surface);font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;white-space:nowrap}
+.fdate-btn:active{background:var(--bg)}
+.fdate-btn.active{background:var(--bav-red);color:#fff;border-color:var(--bav-red)}
+.frow2{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.frow2 select{width:auto;font-size:13px;padding:7px 10px}
+.ibox{background:var(--blue-bg);border:1px solid #B5D4F4;border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:14px;font-size:13px;color:var(--blue-text)}
+.wbox{background:var(--amber-bg);border:1px solid #F0C97A;border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:14px;font-size:13px;color:var(--amber)}
+.gbox{background:var(--teal-bg);border:1px solid #9FD8D2;border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:14px;font-size:13px;color:var(--teal)}
+.tag-si{background:var(--green-bg);color:var(--green);font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;display:inline-block}
+.tag-no{background:var(--gray-bg);color:var(--gray-text);font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;display:inline-block}
+.tag-bav{background:#FDECEC;color:var(--bav-red);font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;display:inline-block}
+.tag-fact{background:var(--green-bg);color:var(--green);font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;display:inline-block}
+</style>
+</head>
+<body>
+
+<div id="roleScreen" class="role-screen">
+  <div class="role-card">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+      <div style="width:52px;height:52px;border-radius:50%;background:var(--bav-red);border:3px solid var(--bav-gold);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-truck-delivery" style="font-size:24px;color:#fff"></i></div>
+      <div>
+        <div style="font-size:22px;font-weight:900;color:var(--bav-red);line-height:1.1">Bavaria</div>
+        <div style="font-size:11px;color:var(--bav-gold);font-weight:700;letter-spacing:1.5px;margin-top:2px">GESTI&Oacute;N DE NOVEDADES DQI</div>
+      </div>
+    </div>
+    <div id="loginStep1">
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px;color:var(--text)">Bienvenido</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:16px">Selecciona tu nombre para continuar</div>
+      <div id="userList" style="display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto">
+        <div style="text-align:center;padding:20px;color:var(--text2);font-size:13px"><i class="ti ti-loader-2" style="font-size:24px"></i><br>Cargando usuarios...</div>
+      </div>
+    </div>
+    <div id="loginStep2" style="display:none">
+      <button id="btnBackLogin" style="background:none;border:none;cursor:pointer;color:var(--text2);font-size:13px;display:flex;align-items:center;gap:4px;margin-bottom:16px;padding:0"><i class="ti ti-arrow-left"></i> Cambiar usuario</button>
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="width:56px;height:56px;border-radius:50%;background:var(--bav-red);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:22px;color:#fff;font-weight:700" id="loginAvatar">?</div>
+        <div style="font-size:18px;font-weight:700" id="loginNombre"></div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px" id="loginRolLabel"></div>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:var(--text2);margin-bottom:8px;text-align:center">Ingresa tu PIN de 4 d&iacute;gitos</div>
+      <div style="display:flex;gap:10px;justify-content:center;margin-bottom:16px" id="pinDots">
+        <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+      </div>
+      <div class="pin-grid">
+        <button class="pin-btn" data-n="1">1</button><button class="pin-btn" data-n="2">2</button><button class="pin-btn" data-n="3">3</button>
+        <button class="pin-btn" data-n="4">4</button><button class="pin-btn" data-n="5">5</button><button class="pin-btn" data-n="6">6</button>
+        <button class="pin-btn" data-n="7">7</button><button class="pin-btn" data-n="8">8</button><button class="pin-btn" data-n="9">9</button>
+        <button class="pin-btn pin-clear" id="pinClear"><i class="ti ti-backspace"></i></button>
+        <button class="pin-btn" data-n="0">0</button>
+        <button class="pin-btn pin-ok" id="pinOk"><i class="ti ti-check"></i></button>
+      </div>
+      <div id="pinError" style="display:none;text-align:center;margin-top:12px;color:var(--bav-red);font-size:13px;font-weight:600">PIN incorrecto. Int&eacute;ntalo de nuevo.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div id="mainApp" style="display:none">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--bav-red);border:2px solid var(--bav-gold);display:flex;align-items:center;justify-content:center"><i class="ti ti-truck-delivery" style="font-size:15px;color:#fff"></i></div>
+        <div>
+          <div style="font-size:15px;font-weight:800;color:var(--bav-red);line-height:1">Bavaria</div>
+          <div style="font-size:9px;color:var(--bav-gold);font-weight:700;letter-spacing:1px;line-height:1">NOVEDADES DQI</div>
+        </div>
+      </div>
+      <span class="role-tag" id="roleTag" style="margin-left:4px"></span>
+    </div>
+    <div style="display:flex;gap:2px;flex-shrink:0">
+      <button class="icon-btn" onclick="toggleNotif()"><i class="ti ti-bell"></i></button>
+      <button class="icon-btn" id="notifPermBtn" onclick="activarNotifs()" title="Activar notificaciones push" style="display:none"><i class="ti ti-bell-off"></i></button>
+      <button class="icon-btn" onclick="cambiarRol()"><i class="ti ti-switch"></i></button>
+    </div>
+  </div>
+  <div class="notif-panel" id="notifPanel">
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px">Notificaciones</div>
+    <div id="notifList"><div style="font-size:13px;color:var(--text2)">Sin notificaciones</div></div>
+  </div>
+  <div class="content" id="contentArea"></div>
+  <div class="bottom-nav" id="bottomNav"></div>
+</div>
+
+<div class="modal-ov" id="modalOv">
+  <div class="modal-box" id="modalBox">
+    <button class="modal-close" id="modalClose"><i class="ti ti-x"></i></button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, getDocs, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const app=initializeApp({apiKey:"AIzaSyDl964QjV7hYBg3RGWjQ1pr89aHRNuFJas",authDomain:"novedades-logistica-7c974.firebaseapp.com",projectId:"novedades-logistica-7c974",storageBucket:"novedades-logistica-7c974.firebasestorage.app",messagingSenderId:"257554370494",appId:"1:257554370494:web:17529ce174ee758b3b33ef"});
+const db=getFirestore(app);
+window._db=db;window._col=collection;window._add=addDoc;window._doc=doc;window._upd=updateDoc;window._del=deleteDoc;window._getDocs=getDocs;window._snap=onSnapshot;window._q=query;window._ord=orderBy;
+window._ready=true;window.dispatchEvent(new Event('firebaseReady'));
+</script>
+<script>
+const SKUS={"31": {"nombre": "Club Col Brr 30L X 1", "familia": "Barril"}, "1413": {"nombre": "Coste\u00f1a Lta 330Cc X 6", "familia": "Lata"}, "1421": {"nombre": "Cola&Pola Lt 330Cc X 24", "familia": "Lata"}, "1428": {"nombre": "Poker Lta 330Cc X 6", "familia": "Lata"}, "1430": {"nombre": "Poker Lta 330Ccx 12 Agr", "familia": "Lata"}, "1431": {"nombre": "Poker Lta 330Ccx 24", "familia": "Lata"}, "2154": {"nombre": "Aguila Tw 330Cc X 24", "familia": "Botella NR"}, "2157": {"nombre": "Aguila Lig Tw 330Cc X 24", "familia": "Botella NR"}, "2160": {"nombre": "Aguila Lig R 330Cc X 30", "familia": "Botella Retornable"}, "2169": {"nombre": "Aguila Lig Lta N 330Ccx12", "familia": "Lata"}, "2170": {"nombre": "Aguila Lig Lta 330Ccx24", "familia": "Lata"}, "2171": {"nombre": "Aguila Lig Lta 330Ccx6", "familia": "Lata"}, "2173": {"nombre": "Aguila Lta 330Cc X 24", "familia": "Lata"}, "2174": {"nombre": "Aguila Lta 330Cc X 6", "familia": "Lata"}, "2182": {"nombre": "Pony Malta R 330Cc X 30", "familia": "Botella Retornable"}, "2183": {"nombre": "Pony Malta R 225Cc X 38", "familia": "Botella Retornable"}, "2206": {"nombre": "Pony Malta Lta 330Ccx 24", "familia": "Lata"}, "2208": {"nombre": "Pony Malta Lta 330Ccx 6", "familia": "Lata"}, "2222": {"nombre": "Pony Malta Pet 330Cc X 24", "familia": "Pet"}, "2223": {"nombre": "Pony Malta Pet 330Cc X 6", "familia": "Pet"}, "2224": {"nombre": "Pony Malta Pet 1.5Lx 6", "familia": "Pet"}, "2298": {"nombre": "Redds Cold R 330Cc X 30", "familia": "Botella Retornable"}, "2302": {"nombre": "Redds Cold Tw 250Cc X 24", "familia": "Botella NR"}, "2511": {"nombre": "Cola&Pola Rn 330Cc X 30", "familia": "Botella Retornable"}, "2512": {"nombre": "Poker R 330Cc X 30", "familia": "Botella Retornable"}, "2759": {"nombre": "Pony Malta Pet 200Cc X 6", "familia": "Pet"}, "2882": {"nombre": "Cola&Pola Pet 1.5L X 6", "familia": "Pet"}, "2976": {"nombre": "Cola&Pola Lta 330Cc X 6", "familia": "Lata"}, "2999": {"nombre": "Redds Cold Tw 250X6", "familia": "Botella NR"}, "3128": {"nombre": "Aguila Rn 330Cc X 30", "familia": "Botella Retornable"}, "3162": {"nombre": "Poker Lig R 330Cc X 30", "familia": "Botella Retornable"}, "3198": {"nombre": "Coste\u00f1a Rn 350Ccx 30", "familia": "Botella Retornable"}, "3203": {"nombre": "Redds Cold Lt 269Cc X 24", "familia": "Lata"}, "3222": {"nombre": "Aguila Lig Tw 330X6 Lna", "familia": "Botella NR"}, "3228": {"nombre": "Redds Cold Lta 269Ccx6", "familia": "Lata"}, "3229": {"nombre": "Aguila Lta 330Ccx 12 Lna", "familia": "Lata"}, "3232": {"nombre": "Poker Lta 330X12 Lna", "familia": "Lata"}, "3583": {"nombre": "Aguila R 750Cc X 16", "familia": "Botella Retornable"}, "3617": {"nombre": "Coste\u00f1ita R 175Cc X 38", "familia": "Botella Retornable"}, "3659": {"nombre": "Poker R 750Cc X 16", "familia": "Botella Retornable"}, "3664": {"nombre": "Aguila Lig R 750Cc X 16", "familia": "Botella Retornable"}, "3751": {"nombre": "Club Col R 330Cc X 30 N", "familia": "Botella Retornable"}, "3753": {"nombre": "Club Col Tw 330Cc X 24 N", "familia": "Botella NR"}, "3756": {"nombre": "Club Col Rj Tw 330Ccx24 N", "familia": "Botella NR"}, "3758": {"nombre": "Club Col Ng Tw 330Cc X 24 N", "familia": "Botella NR"}, "3759": {"nombre": "Club Col Rj R 330Cc X 30 N", "familia": "Botella Retornable"}, "3760": {"nombre": "Club Col Ng R 330Cc X 30 N", "familia": "Botella Retornable"}, "3787": {"nombre": "Club Col Tw 330Ccx6 N", "familia": "Botella NR"}, "3788": {"nombre": "Club Col Rj Tw 330X6 N", "familia": "Botella NR"}, "3789": {"nombre": "Club Col Ng Tw 330Ccx6 N", "familia": "Botella NR"}, "3810": {"nombre": "Pony Malta Pet 200Ccx30", "familia": "Pet"}, "4044": {"nombre": "Club Col Rj Brr 30L X 1", "familia": "Barril"}, "4063": {"nombre": "Miller Lite R 330Cc X 30", "familia": "Botella Retornable"}, "4648": {"nombre": "Miller Lite Lta 330Cc X 24", "familia": "Lata"}, "4649": {"nombre": "Miller Lite Lta 330Cc X 6", "familia": "Lata"}, "5119": {"nombre": "Aguila Cero R 330Cc X 30", "familia": "Botella Retornable"}, "5120": {"nombre": "Aguila Cero Tw 330Cc X 24", "familia": "Botella NR"}, "5121": {"nombre": "Aguila Cero Lta 330Cc X 24", "familia": "Lata"}, "5150": {"nombre": "Poker Lta 473Cc X 6", "familia": "Lata"}, "5250": {"nombre": "Club Col Lta 330Cc X 24 N", "familia": "Lata"}, "5251": {"nombre": "Club Col Lta 330Cc X 12 N.", "familia": "Lata"}, "5252": {"nombre": "Club Col Lta 330X6 N", "familia": "Lata"}, "5253": {"nombre": "Club Col Rj Lta 330Ccx 24 N", "familia": "Lata"}, "5254": {"nombre": "Club Col Rj Lta 330X12 N", "familia": "Lata"}, "5255": {"nombre": "Club Col Rj Lta 330X6 N", "familia": "Lata"}, "5256": {"nombre": "Club Col Ng Lta 330X24 N", "familia": "Lata"}, "5257": {"nombre": "Club Col Ng Lta 330Ccx6 N", "familia": "Lata"}, "5268": {"nombre": "Poker Lta 473Ccx 18", "familia": "Lata"}, "5354": {"nombre": "Bahia R 225Cc X 38", "familia": "Botella Retornable"}, "5505": {"nombre": "Aguila Cero Lta 330Cc X 6", "familia": "Lata"}, "5506": {"nombre": "Aguila Cero Tw 330Cc X 6", "familia": "Botella NR"}, "5513": {"nombre": "Pony Malta Pet 200 X 8 Agr", "familia": "Pet"}, "5541": {"nombre": "Club Col Re Tw 900Cc X 6", "familia": "Botella Retornable"}, "5623": {"nombre": "Club Col R 330Cc X 30 Okf", "familia": "Botella Retornable"}, "5624": {"nombre": "Club Col Lta 330Ccx24 Okf", "familia": "Lata"}, "5626": {"nombre": "Club Col Brr 30L X 1 Okf", "familia": "Barril"}, "5630": {"nombre": "Aguila Lta 473Cc X 6", "familia": "Lata"}, "5632": {"nombre": "Aguila Lig Lta 473Ccx6", "familia": "Lata"}, "5761": {"nombre": "Aguila Lig Lta 330 X 16 Pro", "familia": "Lata"}, "5904": {"nombre": "Aguila Lta 473Cc X 18", "familia": "Lata"}, "5905": {"nombre": "Aguila Lig Lta 473Ccx18", "familia": "Lata"}, "5958": {"nombre": "Miller Gd Col Tw 355Cc X 6", "familia": "Botella NR"}, "5959": {"nombre": "Miller Gd Col Lata 355Cc X 24", "familia": "Lata"}, "5960": {"nombre": "Miller Gd Col Lata 355Cc X 6", "familia": "Lata"}, "6121": {"nombre": "Redds App Tw 250Cc X 24", "familia": "Botella NR"}, "6122": {"nombre": "Redds App Lta 269Cc X 24", "familia": "Lata"}, "6819": {"nombre": "Club Col Ng Brr 20L X 1", "familia": "Barril"}, "6860": {"nombre": "Club Col Lta 330Cc X 9 Navidad Agr", "familia": "Lata"}, "6861": {"nombre": "Club Col Ng Lta 330Cc X 9 Navidad Agr", "familia": "Lata"}, "6862": {"nombre": "Club Col Rj Lta 330Cc X 9 Navidad Agr", "familia": "Lata"}, "7078": {"nombre": "Pony Malta Pet 1.0L X 15", "familia": "Pet"}, "7329": {"nombre": "Club Col Tw 330Cc X 10 Tat", "familia": "Botella NR"}, "7330": {"nombre": "Club Col Ng Tw 330Cc X 10 Tat", "familia": "Botella NR"}, "7410": {"nombre": "Club Col Lta 330Cc X 6 Okf", "familia": "Lata"}, "7450": {"nombre": "Redds App Lta 269Cc X 4", "familia": "Lata"}, "7451": {"nombre": "Redds App Lta 269Cc X 4 Tat", "familia": "Lata"}, "7475": {"nombre": "Club Col Tg Nr 330Cc X 6", "familia": "Botella NR"}, "7476": {"nombre": "Club Col Tg Nr 330Cc X 24", "familia": "Botella NR"}, "7474": {"nombre": "Club Col Tg R 330Cc X 30", "familia": "Botella Retornable"}, "7487": {"nombre": "Club Col Lta 269Cc X 24", "familia": "Lata"}, "7575": {"nombre": "Coronita Extra Tw 207Cc 4Px6U", "familia": "Botella NR"}, "7576": {"nombre": "Corona Extra Tw 355Cc 4Px6U", "familia": "Botella NR"}, "7577": {"nombre": "Corona Extra Tw 710Cc X 12", "familia": "Botella NR"}, "7581": {"nombre": "Stella Artois Tw 330Cc 4Px6U", "familia": "Botella NR"}, "7593": {"nombre": "Bbc Bacata Blanca Nr330Ccx24", "familia": "Botella NR"}, "7594": {"nombre": "Bbc Bacata Blanca Nr330Ccx4", "familia": "Botella NR"}, "7595": {"nombre": "Bbc Lager Nr330Ccx24", "familia": "Botella NR"}, "7596": {"nombre": "Bbc Lager Nr330Ccx6", "familia": "Botella NR"}, "7598": {"nombre": "Bbc Cajica Miel Nr330Ccx24", "familia": "Botella NR"}, "7599": {"nombre": "Bbc Cajica Miel Nr330Ccx4", "familia": "Botella NR"}, "7600": {"nombre": "Bbc Candelaria Clasic Nr330Ccx24", "familia": "Botella NR"}, "7601": {"nombre": "Bbc Candelaria Clasic Nr330Ccx4", "familia": "Botella NR"}, "7602": {"nombre": "Bbc Chapinero Porter Nr330Ccx24", "familia": "Botella NR"}, "7603": {"nombre": "Bbc Chapinero Porter Nr330Ccx4", "familia": "Botella NR"}, "7604": {"nombre": "Bbc Monserrate Rj Nr330Ccx24", "familia": "Botella NR"}, "7605": {"nombre": "Bbc Monserrate Rj Nr330Ccx4", "familia": "Botella NR"}, "7609": {"nombre": "Budweiser Lta 295Cc X 12", "familia": "Lata"}, "7611": {"nombre": "Stella Artois Tw 330 X 6", "familia": "Botella NR"}, "7613": {"nombre": "Coronita Extra Tw 207Cc X 6", "familia": "Botella NR"}, "7614": {"nombre": "Corona Extra Tw 355Cc X 6", "familia": "Botella NR"}, "7617": {"nombre": "Budweiser Tw 355Cc X 6", "familia": "Botella NR"}, "7674": {"nombre": "Budweiser Lta 295Cc 2Px12U", "familia": "Lata"}, "7676": {"nombre": "Bbc Monserrate Rj Nr330Ccx12", "familia": "Botella NR"}, "7584": {"nombre": "Aguila Lig Lta 269Cc X 6.", "familia": "Lata"}, "7686": {"nombre": "Poker Lta 330Cc X 10 Agr", "familia": "Lata"}, "7872": {"nombre": "Bahia Lig R 225Cc X 38", "familia": "Botella Retornable"}, "7902": {"nombre": "Bbc Chapinero Porter Nr330Ccx12", "familia": "Botella NR"}, "7897": {"nombre": "Bbc Bacata Blanca Nr330Ccx12", "familia": "Botella NR"}, "7898": {"nombre": "Bbc Cajica Miel Nr330Ccx12", "familia": "Botella NR"}, "7903": {"nombre": "Bbc Candelaria Clasica Nr330Ccx12", "familia": "Botella NR"}, "7782": {"nombre": "Bbc Bacata Blanca Brr 30L X 1", "familia": "Barril"}, "7951": {"nombre": "Aguila Lig Lta 330Ccx8 Tat", "familia": "Lata"}, "7952": {"nombre": "Aguila Lig Lta 330Ccx8 Ka", "familia": "Lata"}, "7986": {"nombre": "Corona Extra Tw 355Cc X12 Cooler", "familia": "Botella NR"}, "8061": {"nombre": "Budweiser Nr 315Ccx6", "familia": "Botella NR"}, "7991": {"nombre": "Budweiser Nr 250Ccx24", "familia": "Botella NR"}, "8042": {"nombre": "Budweiser Nr 250Ccx6", "familia": "Botella NR"}, "7994": {"nombre": "Budweiser Nr 315Ccx24", "familia": "Botella NR"}, "7996": {"nombre": "Budweiser Lta 269Ccx12 Pack.", "familia": "Lata"}, "7990": {"nombre": "Budweiser Lta Co 269Ccx6 Pack.", "familia": "Lata"}, "7993": {"nombre": "Budweiser Lta Co 269Ccx24.", "familia": "Lata"}, "7780": {"nombre": "Bbc Lager Brr 30L X 1", "familia": "Barril"}, "7790": {"nombre": "Bbc Cajica Miel Brr 30L X 1", "familia": "Barril"}, "7836": {"nombre": "Bbc Monserrate Roja Brr 30L X 1", "familia": "Barril"}, "7857": {"nombre": "Bbc Septimazo Ipa Brr 30L X 1", "familia": "Barril"}, "8123": {"nombre": "Corona Extra Nr 355Cc X6 Bucket", "familia": "Botella NR"}, "8180": {"nombre": "Stella Artois Nr 750Cc X 6 Nav", "familia": "Botella NR"}, "8086": {"nombre": "Redds Mix Apple Lta 269X4", "familia": "Lata"}, "8065": {"nombre": "Poker Lta 355Cc X 6", "familia": "Lata"}, "8073": {"nombre": "Aguila Lta 355Cc X 6", "familia": "Lata"}, "8223": {"nombre": "Corona Extra Nr 355Cc X12 Mini Cooler", "familia": "Botella NR"}, "8221": {"nombre": "Becks Nr 275Cc 4Px6U", "familia": "Botella NR"}, "8066": {"nombre": "Poker Lta 355Ccx 24 R1", "familia": "Lata"}, "8157": {"nombre": "Club Col Lta 355Cc X 6", "familia": "Lata"}, "8063": {"nombre": "Aguila Lta 355Ccx 24", "familia": "Lata"}, "8161": {"nombre": "Club Col Rj Lta 355Cc X 6", "familia": "Lata"}, "8156": {"nombre": "Club Col Lta 355Cc X 24", "familia": "Lata"}, "8135": {"nombre": "Club Col Ng Lta 355X6", "familia": "Lata"}, "8160": {"nombre": "Club Col Rj Lta 355Cc X 24", "familia": "Lata"}, "8163": {"nombre": "Aguila Cero Lta 355Cc X 6", "familia": "Lata"}, "8136": {"nombre": "Club Col Ng Lta 355Cc X 24", "familia": "Lata"}, "8165": {"nombre": "Aguila Cero Lta 355Cc X 24", "familia": "Lata"}, "8072": {"nombre": "Aguila Lta 355Ccx12", "familia": "Lata"}, "8070": {"nombre": "Poker Lta 355Ccx 12", "familia": "Lata"}, "8158": {"nombre": "Club Col Lta 355Cc X 12", "familia": "Lata"}, "8262": {"nombre": "Pony Malta Pet 200Cc 6U X 2P Tat", "familia": "Pet"}, "8287": {"nombre": "Pony Malta Pet 200Cc 6U X 2P Ka", "familia": "Pet"}, "8224": {"nombre": "Club Col Rj Lta 355Cc X 12", "familia": "Lata"}, "8225": {"nombre": "Poker Lta 355Cc X 24 Dda", "familia": "Lata"}, "8212": {"nombre": "Busch Light Lta 330Ccx24", "familia": "Lata"}, "8213": {"nombre": "Busch Light Lta 330Ccx6", "familia": "Lata"}, "8234": {"nombre": "Patagonia Weisse 355Nr X 12", "familia": "Botella NR"}, "8515": {"nombre": "Aguila\u00a0Lta\u00a0355Ccx\u00a024 Pro", "familia": "Lata"}, "8548": {"nombre": "Budweiser Lta 269X6 Fifa+ Vaso.", "familia": "Lata"}, "8306": {"nombre": "Club Col Ng Lata 269Cc X 24", "familia": "Lata"}, "8722": {"nombre": "Club Col Lata 269Cc X 6 Tat", "familia": "Lata"}, "8727": {"nombre": "Club Col Ng Lata 269Cc X 6 Tat", "familia": "Lata"}, "8703": {"nombre": "Club Col Rj Lata 269Cc X 6 Tat", "familia": "Lata"}, "8532": {"nombre": "Club Col Lata 269Cc X 6", "familia": "Lata"}, "8307": {"nombre": "Club Colombia Roja 269 Ccx 24", "familia": "Lata"}, "8547": {"nombre": "Club Col Rj Lata 269Cc X 6", "familia": "Lata"}, "8533": {"nombre": "Club Col Ng Lata 269Cc X 6 Ka", "familia": "Lata"}, "7608": {"nombre": "Patagonia Bohemia Nr 355Cc X 12", "familia": "Botella NR"}, "8367": {"nombre": "Patagonia Amber Lager Nr 355Cc X 12", "familia": "Botella NR"}, "8923": {"nombre": "Azteca Lata-330 X 6", "familia": "Lata"}, "8813": {"nombre": "Becks Lta 355Cc X 24", "familia": "Lata"}, "8828": {"nombre": "Becks Lta 355Cc X 6.", "familia": "Lata"}, "8815": {"nombre": "Becks Nr 275Cc X 6.", "familia": "Botella NR"}, "8814": {"nombre": "Busch Light Rb 330Ccx30", "familia": "Botella Retornable"}, "9084": {"nombre": "Kaufmann Lata 330 X24", "familia": "Lata"}, "9150": {"nombre": "Poker Rn 250Cc X 38", "familia": "Botella Retornable"}, "8881": {"nombre": "Malta Leona Pet 400Cc X 24", "familia": "Pet"}, "8878": {"nombre": "Malta Leona Pet 400Cc X 6", "familia": "Pet"}, "8880": {"nombre": "Malta Leona Rb 330Cc X 30", "familia": "Botella Retornable"}, "9116": {"nombre": "Club Col Mix Lta 355X8 Pro", "familia": "Lata"}, "8570": {"nombre": "Coronita Extra 210Cc X 6", "familia": "Botella NR"}, "9500": {"nombre": "Club Col Lata 269Cc X 12", "familia": "Lata"}, "9494": {"nombre": "Aguila Rn 1000Cc X 13", "familia": "Botella Retornable"}, "9508": {"nombre": "Coronita Nr 210Cc X 6", "familia": "Botella NR"}, "9509": {"nombre": "Corona Nr 355Cc X 6", "familia": "Botella NR"}, "9482": {"nombre": "Aguila Lig Rn 1000Cc X 13", "familia": "Botella Retornable"}, "9480": {"nombre": "Poker Rn 1000Cc X 13", "familia": "Botella Retornable"}, "11961": {"nombre": "Pony Vital Pet200Cc X 6", "familia": "Botella NR"}, "11969": {"nombre": "Pony Malta Pet 2.0L X6", "familia": "Pet"}, "12012": {"nombre": "Bbc La Cotidiana 269Cc Lta X 4", "familia": "Botella NR"}, "9909": {"nombre": "Aguila Lta 269Cc X 6.", "familia": "Lata"}, "12013": {"nombre": "Bbc La Cotidiana 269Cc Lta X 24", "familia": "Lata"}, "12026": {"nombre": "Agua Zalva Sin Gas Pet 600 X 12", "familia": "Pet"}, "12118": {"nombre": "Pony Malta Vital Pet 1.0L X 15", "familia": "Pet"}, "9504": {"nombre": "Malta Leona Pet 1.5L X 6.", "familia": "Pet"}, "9551": {"nombre": "Aguila 0.0 Rb 330Cc X 30", "familia": "Botella Retornable"}, "13443": {"nombre": "Malta Leona Pet 200Cc X 6.", "familia": "Botella NR"}, "12283": {"nombre": "Bbc Cajica Miel Lta 269X4.", "familia": "Lata"}, "13631": {"nombre": "Poker Lata 269 X 6", "familia": "Lata"}, "13766": {"nombre": "Bahia Lta 330Cc X 6", "familia": "Lata"}, "9672": {"nombre": "Budweiser Lta 269Ccx6 Termo.", "familia": "Lata"}, "13451": {"nombre": "Costena Bacana Br 320Ccx30", "familia": "Botella Retornable"}, "13763": {"nombre": "Mikes Lata Hard Lemonade 355 X 24", "familia": "Lata"}, "14603": {"nombre": "Agua Zalva Sin Gas Pet 1.5 L X 6 Pcr", "familia": "PET"}, "15160": {"nombre": "Viejo De Caldas Ron 750 Ml", "familia": "MKP"}, "15210": {"nombre": "Rizadas Tomate 31G X12", "familia": "MKP"}, "15208": {"nombre": "Rizadas Limon 31G X12", "familia": "MKP"}, "15204": {"nombre": "Tosti Empanada Limon 28G X12", "familia": "MKP"}, "15211": {"nombre": "Yupis Salado 15G X12", "familia": "MKP"}, "15207": {"nombre": "Rizadas Mayonesa 31G X12", "familia": "MKP"}, "15205": {"nombre": "Tosti Empanada 28G X12", "familia": "MKP"}, "15202": {"nombre": "Palomitas Caramelo 68G X36", "familia": "MKP"}, "15371": {"nombre": "Nectar Club Aguardiente 375 Ml", "familia": "MKP"}, "15373": {"nombre": "Aguardiente Nectar Club Tetra 1000Ml", "familia": "MKP"}, "15372": {"nombre": "Nectar Club Aguardiente 750 Ml", "familia": "MKP"}, "15374": {"nombre": "Nectar Rojo Aguardiente 750 Ml", "familia": "MKP"}, "15375": {"nombre": "Santafe Ron 375 Ml", "familia": "MKP"}, "15376": {"nombre": "Santafe Ron 750 Ml", "familia": "MKP"}, "13413": {"nombre": "Michelob Ultra Bnr 355Cc X6", "familia": "Botella NR"}, "15149": {"nombre": "San Jorge Maiz Tierno 190G X48", "familia": "MKP"}, "15215": {"nombre": "Pedigree Perro Raza Pequena 420G X 12Un", "familia": "MKP"}, "15217": {"nombre": "Pedigree Sobre Razapequena Carne 100Gx36", "familia": "MKP"}, "15222": {"nombre": "Schick Xtreme3 Piel Sen X12Un Gratis 1Un", "familia": "MKP"}, "15382": {"nombre": "Smirnoff Vodka Lulo 375 Ml", "familia": "MKP"}, "15383": {"nombre": "Smirnoff Ice Vodka Original 275 Ml X4", "familia": "MKP"}, "15381": {"nombre": "Smirnoff Vodka  Lulo 750 Ml", "familia": "MKP"}, "15201": {"nombre": "Copelia Panela Arequipe Y Coco 15G X24", "familia": "MKP"}, "14798": {"nombre": "Mikes Lata Hard Lemonade 355 X 4Pack", "familia": "Lata"}, "14968": {"nombre": "Poker Pura Malta 330X30 Br", "familia": "Botella Retornable"}, "14969": {"nombre": "Poker Pura Malta 330X6 Lta", "familia": "Lata"}, "15551": {"nombre": "Antioque\u00f1o Aguardiente Rojo 375 Ml", "familia": "MKP"}, "15554": {"nombre": "Antioque\u00f1o Aguardiente Sa Verde 750 Ml", "familia": "MKP"}, "15553": {"nombre": "Antioque\u00f1o Aguardiente Rojo 750 Ml", "familia": "MKP"}, "15511": {"nombre": "Viejo De Caldas Ron 375 Ml", "familia": "MKP"}, "15555": {"nombre": "Antioque\u00f1o Aguardiente Sa Verde 375 Ml", "familia": "MKP"}, "15143": {"nombre": "La Mu\u00f1eca Pasta Espaguetti 500G X 24", "familia": "MKP"}, "15162": {"nombre": "La Mu\u00f1eca Pasta Espaguetti 250G X24", "familia": "MKP"}, "15146": {"nombre": "Haz De Oros Harina 500G X25", "familia": "MKP"}, "15148": {"nombre": "Do\u00f1arepa Blanca 500G X24", "familia": "MKP"}, "15689": {"nombre": "Yupi Papas Clasicas Bbq 25G X 12", "familia": "MKP"}, "15690": {"nombre": "Yupi Papas Clasicas Pollo 25G X 12", "familia": "MKP"}, "15691": {"nombre": "El Golpe Con Todo Ranchero 45G X 8", "familia": "MKP"}, "15692": {"nombre": "Tosti Nachos Queso 28G X 12", "familia": "MKP"}, "15693": {"nombre": "Rizadas Mayonesa 28G X 12", "familia": "MKP"}, "15509": {"nombre": "Cristal Aguardiente Xs 375 Ml", "familia": "MKP"}, "15510": {"nombre": "Cristal Aguardiente Xs 750 Ml", "familia": "MKP"}, "14709": {"nombre": "Costena Bacana Lata 330Ccx6", "familia": "Lata"}, "14647": {"nombre": "Stella Artois Nr 330 X6", "familia": "Botella NR"}, "15875": {"nombre": "San Jorge Maiz Lata 190G X2", "familia": "MKP"}, "15873": {"nombre": "San Jorge Salsa Bbq 85G Display X 12", "familia": "MKP"}, "16100": {"nombre": "Old Parr Whisky 750Ml", "familia": "MKP"}, "16094": {"nombre": "Black & White Whisky  700 Ml", "familia": "MKP"}, "15643": {"nombre": "Klim Leche En Polvo 26G X 16 Un", "familia": "MKP"}, "15411": {"nombre": "Apronax 275Mg Displx8 Cap", "familia": "MKP"}, "15806": {"nombre": "Gato Negro Vino Cabernet 750Ml", "familia": "MKP"}, "16099": {"nombre": "Buchanan'S Deluxe Whisky 750Ml", "familia": "MKP"}, "16096": {"nombre": "Schick Quattro Piel Nor X10Un Gratis 1Un", "familia": "MKP"}, "16086": {"nombre": "Diana Arroz Vitamor 500G Bolsax25", "familia": "MKP"}, "16093": {"nombre": "Johnnie Walker Red Label Whisky 375 Ml", "familia": "MKP"}, "16092": {"nombre": "Johnnie Walker Red Label Whisky 700 Ml", "familia": "MKP"}, "16095": {"nombre": "Black & White Whisky  375 Ml", "familia": "MKP"}, "16089": {"nombre": "San Jorge Mayonesa 85G Displayx12", "familia": "MKP"}, "16087": {"nombre": "Diana Arroz Vitamor 1000Gbolsax15", "familia": "MKP"}, "16097": {"nombre": "Antioque\u00f1o Aguard Sinaz 750Ml", "familia": "MKP"}, "15807": {"nombre": "Gato Negro Vino Merlot 750Ml", "familia": "MKP"}, "15808": {"nombre": "Jose Cuervo Tequila Esp Reposado 750 Ml", "familia": "MKP"}, "15809": {"nombre": "Jose Cuervo Tequila Esp Reposado 375 Ml", "familia": "MKP"}, "16178": {"nombre": "Baileys Crema De Whisky 700 Ml", "familia": "MKP"}, "16179": {"nombre": "Baileys Crema De Whisky 375 Ml", "familia": "MKP"}, "14703": {"nombre": "Aguila 0.0 Lta 330Ccx6", "familia": "Botella NR"}, "16088": {"nombre": "San Jorge Salsa Tomate 85G Displayx12", "familia": "MKP"}, "16090": {"nombre": "Antioque\u00f1o Aguard Sinaz 375Ml", "familia": "MKP"}, "15012": {"nombre": "Club Col Oktf Festbier Br 330", "familia": "MKP"}, "15641": {"nombre": "Milo Activgo Ristra 25G X 18 Un", "familia": "MKP"}, "14706": {"nombre": "Becks Lta 330Cc X 6", "familia": "Botella NR"}, "15366": {"nombre": "Stella Artois Lata 269 X6", "familia": "Lata"}, "16091": {"nombre": "Antioque\u00f1o Aguard Sinaz Tetra 1050Ml", "familia": "MKP"}, "15024": {"nombre": "Club Col Doble Malta Lta 330Cc X 6", "familia": "Lata"}, "15070": {"nombre": "Busch Light Lta 330Ccx6 Linea", "familia": "Lata"}, "15781": {"nombre": "Club Col Dorada R 850Cc X 13", "familia": "Botella Retornable"}, "14707": {"nombre": "Poker Roja Lata 330X6", "familia": "Lata"}, "16210": {"nombre": "Pony Malta Lta 330Ccx 6 Nuevo", "familia": "Lata"}, "15545": {"nombre": "Bahia Lager Lta 330Cc X 24", "familia": "Lata"}, "16398": {"nombre": "Malta Leona Cafe Lata 269X6", "familia": "Lata"}, "14197": {"nombre": "Mikes Lta Hard Lemon Strawbeery 355X24", "familia": "Lata"}, "15015": {"nombre": "Club Col Doble Malta Lta 330Cc X 24", "familia": "Lata"}, "16396": {"nombre": "Mikes Lata Lemon X2/Straw X2 355Ml", "familia": "Lata"}, "16921": {"nombre": "Smirnoff Lulo Vodka Tetrapack 1L", "familia": "MKP"}, "16017": {"nombre": "Club Col Doble Malta Lta 330Cc X 6 Linea", "familia": "Lata"}, "16466": {"nombre": "Austen Lta 330Cc X6", "familia": "Lata"}, "16542": {"nombre": "Pony Malta Flavor Pet 330Cc X 6", "familia": "Pet"}, "15144": {"nombre": "Manuelita Azucar 500G X25", "familia": "MKP"}, "16429": {"nombre": "Mani Moto Natural 48Gx12Un", "familia": "MKP"}, "16767": {"nombre": "Aspirina X 24 ( 2 Packs X 12 Un)", "familia": "MKP"}, "16948": {"nombre": "Aspirina Ultra X 20", "familia": "MKP"}, "15408": {"nombre": "Aspirina Ef 0.5G X50Un + 4 Apronax 275Mg", "familia": "MKP"}, "15645": {"nombre": "Nestum Cereal Trigo Miel 25G Ristra X10", "familia": "MKP"}, "16425": {"nombre": "Margarita Papas Limon 25G X 12Un", "familia": "MKP"}, "16766": {"nombre": "Aspirina Efervescente Pague 52 Lleve 62", "familia": "MKP"}, "16923": {"nombre": "Gaviscon Liquido Doble Accion 10G X12Un", "familia": "MKP"}, "17143": {"nombre": "Rosaleda Vino Tinto Cabernet Sauv 750Ml", "familia": "MKP"}, "17144": {"nombre": "Rosaleda Vino Tinto Merlot 750Ml", "familia": "MKP"}, "15413": {"nombre": "Mexsana Talco 150G+ Mexsana Talco 85G", "familia": "MKP"}, "15644": {"nombre": "Nescafe Cafe Tradicion 10G X 12", "familia": "MKP"}, "15638": {"nombre": "Maggi Caldo Gallina 11G X 12", "familia": "MKP"}, "16434": {"nombre": "Aburra Lenteja Bolsa 500Gx25Un", "familia": "MKP"}, "16435": {"nombre": "Aburra Arveja Verde Bolsa 500Gx 25 Un", "familia": "MKP"}, "16436": {"nombre": "Aburra Frijol Rojo 500Gx 25Un", "familia": "MKP"}, "16431": {"nombre": "Chokis Chispas Choco 47Gx6Un", "familia": "MKP"}, "15410": {"nombre": "Alka Seltzer Displayx60 Tabletas", "familia": "MKP"}, "16297": {"nombre": "Colgate Crema Triple Accion 60Mlx12Un", "familia": "MKP"}, "16298": {"nombre": "Colgate Cepillo Premierx12Un", "familia": "MKP"}, "16299": {"nombre": "Lady Speed Stick Desodorante 9Gx18Un", "familia": "MKP"}, "16300": {"nombre": "Speed Stick H.Xtreme Crema 9Gx18Un", "familia": "MKP"}, "16424": {"nombre": "Margarita Papas Natural 25G X 12Un", "familia": "MKP"}, "16426": {"nombre": "Margarita Papas Pollo 25Gx12Un", "familia": "MKP"}, "16427": {"nombre": "Detodito Bbq 45Gx 12Un", "familia": "MKP"}, "16428": {"nombre": "Detodito Natural 45Gx 12Un", "familia": "MKP"}, "16430": {"nombre": "Cheesetris Queso 42Gx12Un", "familia": "MKP"}, "16367": {"nombre": "Doublemint Chicles Hierbabuenax20Un", "familia": "MKP"}, "17334": {"nombre": "Llanero Aguardiente 500Ml", "familia": "MKP"}, "17333": {"nombre": "Llanero Aguardiente Ligero24Grados 750Ml", "familia": "MKP"}, "15145": {"nombre": "Refisal Sal 500G X25", "familia": "MKP"}, "15409": {"nombre": "Alka Seltzer Extreme Display X20 Sobres", "familia": "MKP"}, "15637": {"nombre": "La Lechera Leche Condensada 25G X 26 Un", "familia": "MKP"}, "16432": {"nombre": "Aburra Arveja Y Zanah Lata 580Gx12Un", "familia": "MKP"}, "16433": {"nombre": "Aburra Frijoles Antioq Lata 580Gx 12Un", "familia": "MKP"}, "16765": {"nombre": "Alka Seltzer Pague 64Un Lleve 74Un", "familia": "MKP"}, "17014": {"nombre": "Simcard Preactiva Wom Lte 5000", "familia": "MKP"}, "16465": {"nombre": "Alka Seltzer X60 Un Gratis Alka Extreme", "familia": "MKP"}, "16366": {"nombre": "Whiskas Sobre Gato Adulto Carne 85Gx20Un", "familia": "MKP"}, "16102": {"nombre": "Alqueria Leche Deslactosada1.1Lt Bo X6Un", "familia": "MKP"}, "15407": {"nombre": "Aspirina Efervecente 0.5G Displx50Tab", "familia": "MKP"}, "16198": {"nombre": "Cola&Pola Limonada Coco Lt 330Cc X6", "familia": "Lata"}, "17159": {"nombre": "Saviloe 320Ml X 6Un", "familia": "MKP"}, "17160": {"nombre": "Vive 100 240Mlx6Un", "familia": "MKP"}, "17162": {"nombre": "Spartan Energy 269Mlx6 Un", "familia": "MKP"}, "17163": {"nombre": "Vive 100 Regular 380Ml X6Un", "familia": "MKP"}, "17164": {"nombre": "Saviloe 420Mlx4Un", "familia": "MKP"}, "17311": {"nombre": "Rosaleda Vino Blanco Sauvigno Blanx750Ml", "familia": "MKP"}, "17312": {"nombre": "Rosaleda Vino Rosado X 750Ml", "familia": "MKP"}, "17404": {"nombre": "Margarita Papas Bbq  25Gx12Un", "familia": "MKP"}, "17405": {"nombre": "Cheetos Boli Queso 20Gx12Un", "familia": "MKP"}, "17406": {"nombre": "Chokis Chispas 37Gx6Un", "familia": "MKP"}, "17483": {"nombre": "Llanero Aguardiente Tradicio Pet 1750Cc", "familia": "MKP"}, "17484": {"nombre": "Llanero Aguardiente Lig 24G  Pet 1750Cc", "familia": "MKP"}, "17485": {"nombre": "Llanero Aguardiente  Lig 24G Pet 375Cc", "familia": "MKP"}, "17486": {"nombre": "Llanero Aguardiente 1960 Pet 750Cc", "familia": "MKP"}, "16225": {"nombre": "Olmeca Silver Tequila 700Ml", "familia": "MKP"}, "15152": {"nombre": "Olmeca Reposado Tequila 700Ml", "familia": "MKP"}, "16136": {"nombre": "Pringles Papas 21G X 6Un", "familia": "MKP"}, "16153": {"nombre": "Frootloops Sachet 25Gx 8Un", "familia": "MKP"}, "17154": {"nombre": "Corona Extra 269 Lta X24 Rem", "familia": "Lata"}, "17155": {"nombre": "Corona Extra 269 Lta X6 Rem", "familia": "Lata"}, "17407": {"nombre": "Asp Efer(500Mgx2X12Un) Gts Apro275Mgx4Un", "familia": "MKP"}, "17482": {"nombre": "Llanero Aguardiente Tradicional 375Cc", "familia": "MKP"}, "17659": {"nombre": "Speed Max 1L X 12Un", "familia": "MKP"}, "17660": {"nombre": "Gatorade Mandarina 500Ml X 12Un", "familia": "MKP"}, "17661": {"nombre": "Gatorade Maracuya 500Ml X 12Un", "familia": "MKP"}, "17664": {"nombre": "Manzana Gaseosa Postobon 400Ml X 15Un", "familia": "PET"}, "17665": {"nombre": "Uva Gaseosa Postobon 400Ml X 15Un", "familia": "MKP"}, "17667": {"nombre": "Colombiana Gaseosa 400Ml X 15Un", "familia": "MKP"}, "17668": {"nombre": "H2Oh Limalimon Agua Saborizada 1.5Lx12Un", "familia": "MKP"}, "17669": {"nombre": "H2Oh Limonata Agua Saborizada 600Mlx15Un", "familia": "MKP"}, "17753": {"nombre": "Pepsi Gaseosa 2.5L X 8Un", "familia": "MKP"}, "17754": {"nombre": "Uva Gaseosa Postobon 2L X 8Un", "familia": "MKP"}, "17755": {"nombre": "Colombiana Gaseosa 2.5L X 8Un", "familia": "MKP"}, "17756": {"nombre": "Hit Jugo Frutas Tropical Pet 500Ml X12Un", "familia": "Pet"}, "17758": {"nombre": "Pepsi Gaseosa 400Ml X 15Un", "familia": "MKP"}, "17781": {"nombre": "Hit Jugo Mango Pet 500Ml X12Un", "familia": "Pet"}, "16468": {"nombre": "Jp Chenet Coctel Fizzy 250Ml X3Un", "familia": "MKP"}, "17759": {"nombre": "Saviloe 420Ml X 6 Un", "familia": "MKP"}, "17750": {"nombre": "Galletas Oreo Regular Exp 36G X 12 Un", "familia": "MKP"}, "18291": {"nombre": "Panelada 420Ml X 6 Un", "familia": "MKP"}, "17672": {"nombre": "Canada Dry Soda 400Ml X15Un", "familia": "MKP"}, "17865": {"nombre": "Detodito Bbq 165G", "familia": "MKP"}, "18355": {"nombre": "Chocokrispis Sachet 39G X 8Un", "familia": "MKP"}, "18356": {"nombre": "Zucaritas Sachet 39G X 8Un", "familia": "MKP"}, "18115": {"nombre": "Margarita Papas Natural 105G", "familia": "MKP"}, "18116": {"nombre": "Margarita Papas Limon 105G", "familia": "MKP"}, "18117": {"nombre": "Mermelada Sanjorge Surti Sachet 90G X8Un", "familia": "MKP"}, "18281": {"nombre": "Achiras Del Huila 25G X 12 Un", "familia": "MKP"}, "18352": {"nombre": "Mani Moto Natural 44Gx12Un", "familia": "MKP"}, "17403": {"nombre": "Cheetos Natural 15Gx12Un", "familia": "MKP"}, "17862": {"nombre": "Detodito Natural 165G", "familia": "MKP"}, "18280": {"nombre": "Achiras Del Huila 50G X 6 Un", "familia": "MKP"}, "18113": {"nombre": "Catira Arroz 454G X 25 Un", "familia": "MKP"}, "18273": {"nombre": "Passport Selection Whisky 500 Ml", "familia": "MKP"}, "18106": {"nombre": "Sonora Arroz 500G X 25 Un", "familia": "MKP"}, "18108": {"nombre": "Valle Grande Arroz 450G X 25 Un", "familia": "MKP"}, "15901": {"nombre": "Trident Chicles Vp Menta 18Past Displx12", "familia": "MKP"}, "15902": {"nombre": "Trident Chicles Vp Sandia 18Past Displx1", "familia": "MKP"}, "15905": {"nombre": "Halls Extrastrong 9Past Displ12", "familia": "MKP"}, "15904": {"nombre": "Halls Cereza 9Past Displ12", "familia": "MKP"}, "17752": {"nombre": "Manzana Gaseosa Postobon 2.5L X 8Un", "familia": "MKP"}, "18357": {"nombre": "Frootloops Sachet 33Gx 8Un", "familia": "MKP"}, "18114": {"nombre": "Margarita Papas Pollo 105G", "familia": "MKP"}, "18470": {"nombre": "Chocokrispis Choco Copos 30G X 8Un", "familia": "MKP"}, "18766": {"nombre": "Durex Maximo Placer X 3 Un", "familia": "MKP"}, "18997": {"nombre": "Album Panini P Blanda Mundial Qatar 2022", "familia": "MKP"}, "18999": {"nombre": "Caja X 104 Sobres Panini Mundial Qatar22", "familia": "MKP"}, "16154": {"nombre": "Pringles Original 37Gx12Un", "familia": "MKP"}, "17859": {"nombre": "El Golpe Ranchero 140G", "familia": "MKP"}, "18614": {"nombre": "Rizadas Papas Pollo 31G X 12Un", "familia": "MKP"}, "18619": {"nombre": "Golpe Con Todo Criollo 50G X 8Un", "familia": "MKP"}, "18620": {"nombre": "El Golpe Con Todo Mayonesa 140G", "familia": "MKP"}, "18765": {"nombre": "Durex Clasico X 3 Un", "familia": "MKP"}, "18905": {"nombre": "Vick Vaporub 12G X 6 Un", "familia": "MKP"}, "18906": {"nombre": "Vick Cereza  10G X 5 Un", "familia": "MKP"}, "19256": {"nombre": "Vive 100 Lata 269Ml X6", "familia": "MKP"}, "18216": {"nombre": "C Tropical Lim Fr Roj Lta 355Ml X12 Reem", "familia": "Lata"}, "18217": {"nombre": "C Tropical Lim Fruto Ama Lta 355X12 Reem", "familia": "Lata"}, "18218": {"nombre": "C Tropical Lima Limon Lt 355Ml X12 Reem", "familia": "Lata"}, "18624": {"nombre": "Yupis Cheese 45G X 6Un", "familia": "MKP"}, "19123": {"nombre": "Black & White Whisky 200Ml", "familia": "MKP"}, "19184": {"nombre": "Budweiser Lta 355Cc 6Pack Fifa Wcup", "familia": "Lata"}, "19255": {"nombre": "Spartan Xtreme 269Ml Lata X6", "familia": "MKP"}, "19257": {"nombre": "Vive 100 Zero 380 Ml X6", "familia": "MKP"}, "19596": {"nombre": "Club Col Eterno Lta 330X6 Reemp", "familia": "Lata"}, "17819": {"nombre": "Riquisimo Aceite 500C.C X 24Un", "familia": "MKP"}, "18039": {"nombre": "Stella Artois Nr 330 X6 Belg", "familia": "Botella NR"}, "18224": {"nombre": "Mikes Hard Lemonade Lta 355Ml X12P Reem", "familia": "Lata"}, "18226": {"nombre": "Mikes Hard Lem Strawbeery Lta 355X12 Rem", "familia": "Lata"}, "18846": {"nombre": "Pano Scott Duramax Rollo X58H", "familia": "MKP"}, "18847": {"nombre": "Papel Higienico Scott Rindemax 2H X30Un", "familia": "MKP"}, "18850": {"nombre": "Papel Higienico Scott Cuidado Com 3Hx24U", "familia": "MKP"}, "18851": {"nombre": "Papel Higienico Scott Cuidado Com 3Hx4Un", "familia": "MKP"}, "18857": {"nombre": "Toallitas Humedas Huggies X48Un", "familia": "MKP"}, "18892": {"nombre": "Toallas Higienicas Kotex Normal X30Un", "familia": "MKP"}, "18893": {"nombre": "Toallas Higienicas Kotex Nocturna X30Un", "familia": "MKP"}, "18894": {"nombre": "Protectores Diarios Kotex X150Un", "familia": "MKP"}, "18895": {"nombre": "Toalla Higienicas Kotex Norx10Un Gts2Un", "familia": "MKP"}, "19306": {"nombre": "Cabano Ranchera 25G X 8Un", "familia": "MKP"}, "19307": {"nombre": "La Especial Limon Y Pimienta 40G X 12Un", "familia": "MKP"}, "19309": {"nombre": "La Especial Manicero 25G X 24Un", "familia": "MKP"}, "19316": {"nombre": "Dux Galleta Original 27.8G X 14Un", "familia": "MKP"}, "19371": {"nombre": "Pedigree Humedo R.Peq Carne 100Gx24Un", "familia": "MKP"}, "19373": {"nombre": "Whiskas Humedo Gato Adulto Carne85Gx24Un", "familia": "MKP"}, "19504": {"nombre": "Galleta Navidena Caja Surtida 150G X24Un", "familia": "MKP"}, "19572": {"nombre": "Natilla El Taita 300G X 20Un", "familia": "MKP"}, "19573": {"nombre": "Bunuelo El Taita 300G X 20Un", "familia": "MKP"}, "15854": {"nombre": "Club Col Lta 330X6 Carton", "familia": "Lata"}, "17290": {"nombre": "Corona Tropical Sabores 355X4", "familia": "Lata"}, "18065": {"nombre": "Recargas Digitales", "familia": "MKP"}, "18220": {"nombre": "C Tropical Limon Toronja Lta 355X12 Reem", "familia": "Lata"}, "18274": {"nombre": "Passport Whisky 200 Ml", "familia": "MKP"}, "19091": {"nombre": "Smirnoff Ice Red Lata 250 Mlx4Un", "familia": "MKP"}, "19092": {"nombre": "Smirnoff Ice Green Apple 250 Mlx4Un", "familia": "MKP"}, "19126": {"nombre": "Something Special Whisky 200 Ml", "familia": "MKP"}, "19127": {"nombre": "Something Special Whisky 350 Ml", "familia": "MKP"}, "19303": {"nombre": "Bahia Lager Lta 330Cc X6", "familia": "Lata"}, "19315": {"nombre": "Dux Galleta Rellena Queso 36G X 6Un", "familia": "MKP"}, "19505": {"nombre": "Durazno Lata En Mitades Ta 300Grx1Un", "familia": "MKP"}, "19576": {"nombre": "Sabor Del Pacificolto Atun Aceite175Gx4U", "familia": "MKP"}, "19823": {"nombre": "Amper Energy 473Mlx6Und", "familia": "MKP"}, "15633": {"nombre": "Oralb Cepillo 123", "familia": "MKP"}, "15859": {"nombre": "Club Col Rj Lta 330X6 Carton", "familia": "Lata"}, "15860": {"nombre": "Club Col Ng Lta 330Ccx6 Carton", "familia": "Lata"}, "15962": {"nombre": "Balde Metalico Corona", "familia": "MKP"}, "16344": {"nombre": "Termo Aluminio Corona", "familia": "MKP"}, "16356": {"nombre": "Aguardiente Caucano Sin Azucar 375Ml", "familia": "MKP"}, "16418": {"nombre": "Nectar Club Rojo Aguardiente 170Mlx4Un", "familia": "MKP"}, "16486": {"nombre": "Four Loko Sandia 473Ml X 6Un", "familia": "MKP"}, "16487": {"nombre": "Four Loko Gold 473Ml X 6Un", "familia": "MKP"}, "16744": {"nombre": "Doble Anis Aguardiente 375Ml", "familia": "MKP"}, "16746": {"nombre": "Doble Anis Aguardiente750Ml", "familia": "MKP"}, "16747": {"nombre": "Doble Anis Aguardiente Sin Azucar 375Ml", "familia": "MKP"}, "16850": {"nombre": "Ideal Arroz Samara 500G X 24 Un", "familia": "MKP"}, "16851": {"nombre": "Ideal Arroz 1000Gx15 Un", "familia": "MKP"}, "16867": {"nombre": "Lider Aguardiente Sin Azucar 375Ml", "familia": "MKP"}, "16905": {"nombre": "Snickers Barra Choc Y Mani 21,5G X 24 Un", "familia": "MKP"}, "16920": {"nombre": "Club Col Bnr 330Cc X 6 Doble Malta", "familia": "Lata"}, "16922": {"nombre": "Black & White Whisky 1L", "familia": "MKP"}, "17021": {"nombre": "Aguardiente Amarillo De Manzanares 375Ml", "familia": "MKP"}, "17158": {"nombre": "Corona Extra 269 Lta X24 Lin", "familia": "Lata"}, "17167": {"nombre": "Aguardiente Narino Sin Azucar 750 Ml", "familia": "MKP"}, "17168": {"nombre": "Aguardiente Narino Sin Azucar 375Ml", "familia": "MKP"}, "17198": {"nombre": "Pedialyte 45 Mq Guarana 500Ml", "familia": "MKP"}, "17199": {"nombre": "Pedialyte Max 60 Mq Uva 500Ml", "familia": "MKP"}, "17200": {"nombre": "Pedialyte Max 60 Meq Manzana 500Ml", "familia": "MKP"}, "17286": {"nombre": "Corona Tropical Lima Limon Lt 355Ml X24", "familia": "Lata"}, "17287": {"nombre": "Corona Tropical Lim Fr Roj Lta 355Ml X24", "familia": "Lata"}, "17288": {"nombre": "Corona Tropical Limon Toronja Lta 355X24", "familia": "Lata"}, "17289": {"nombre": "Corona Tropical Lim Fruto Ama Lta 355X24", "familia": "Lata"}, "17402": {"nombre": "Blanco Del Valle Aguardiente Fies1000Cm3", "familia": "MKP"}, "17429": {"nombre": "Simcard Preactiva Tigo 4.000 X 5 Un", "familia": "MKP"}, "17430": {"nombre": "Jose Cuervo Ed Especial Calavera 750Ml", "familia": "MKP"}, "17489": {"nombre": "Viejo Caldas Ron Essencial 375Ml", "familia": "MKP"}, "17490": {"nombre": "Viejo Caldas Ron Essencial 750Ml", "familia": "MKP"}, "17491": {"nombre": "Viejo Caldas Ron 5 Anos 375Ml", "familia": "MKP"}, "17492": {"nombre": "Viejo Caldas Ron 5 Anos 750Ml", "familia": "MKP"}, "17507": {"nombre": "Smirnoff X1Lulo Sinazucar 375Ml", "familia": "MKP"}, "17508": {"nombre": "Smirnoff X1Lulo Sinazucar 750Ml", "familia": "MKP"}, "17509": {"nombre": "Smirnoff X1Lulo Sinazucar 1000Ml", "familia": "MKP"}, "17594": {"nombre": "Corona Tropical Sabores 355X12 Remp", "familia": "Lata"}, "17658": {"nombre": "Red Bull Lata 355Ml X 24Un", "familia": "MKP"}, "17674": {"nombre": "Blanco Del Valle Aguardien Fiestapet 750", "familia": "MKP"}, "17691": {"nombre": "Riquisimo Aceite X 500 C.C.", "familia": "MKP"}, "17701": {"nombre": "Providencia Azucar Blanco 0.5 Kg X 25Un", "familia": "MKP"}, "17729": {"nombre": "San Jorge Vinagre Sachet 25Cm3X24Un", "familia": "MKP"}, "17789": {"nombre": "Leopardo Arroz 500G Bolsax 25Un", "familia": "MKP"}, "17790": {"nombre": "Leopardo Arroz 1000G Bolsax 12Un", "familia": "MKP"}, "17857": {"nombre": "Rizadas Mayonesa 110G", "familia": "MKP"}, "17858": {"nombre": "Rizadas Mayonesa 250G", "familia": "MKP"}, "17860": {"nombre": "Golpe Con Todo Ranchero 250G", "familia": "MKP"}, "17868": {"nombre": "Chivas Regal Extra 13 Anos Whisky  700Ml", "familia": "MKP"}, "17894": {"nombre": "Frizz Limon 269Ml X 6Un", "familia": "MKP"}, "17895": {"nombre": "Frizz Frutos Rojos 269Ml X 6Un", "familia": "MKP"}, "18017": {"nombre": "Mlb Summer X10Cjt X 200 Cig", "familia": "MKP"}, "18020": {"nombre": "Mlb Fusion X10Cjt X 200 Cig", "familia": "MKP"}, "18021": {"nombre": "Mlb Rojo X10Cjt X 200 Cig", "familia": "MKP"}, "18022": {"nombre": "Mlb Rojo X10Cjt X 100 Cig", "familia": "MKP"}, "18023": {"nombre": "Mlb Exotic X10Cjt X 100 Cig", "familia": "MKP"}, "18024": {"nombre": "L&M Purple X10Cjt X 100 Cig", "familia": "MKP"}, "18025": {"nombre": "L&M Silver X10Cjt X 100 Cig", "familia": "MKP"}, "18026": {"nombre": "L&M Silver X10Cjt X 200 Cig", "familia": "MKP"}, "18059": {"nombre": "Stella Artois Nr 330 X24 Belg", "familia": "Botella NR"}, "19369": {"nombre": "La Soberana Atun En Aceite 140G X 6Un", "familia": "MKP"}, "19535": {"nombre": "Electrolit Uva 625Mlx3Und", "familia": "MKP"}, "19536": {"nombre": "Electrolit Maracuya 625Mlx3Und", "familia": "MKP"}, "19537": {"nombre": "Electrolit Mora Azul 625Mlx3Und", "familia": "MKP"}, "19538": {"nombre": "Electrolit Fresa Kiwi 625Mlx3Und", "familia": "MKP"}, "19581": {"nombre": "Panales Huggies Active Sec Mx25Un", "familia": "MKP"}, "19582": {"nombre": "Panales Huggies Active Sec Gx25Un", "familia": "MKP"}, "19583": {"nombre": "Panales Huggies Active Sec Xgx25Un", "familia": "MKP"}, "19634": {"nombre": "Panales Pants Huggies Active Sec Gx25Un", "familia": "MKP"}, "19635": {"nombre": "Panales Pants Huggies Active Secxgx25Un", "familia": "MKP"}, "20016": {"nombre": "Mikes Hard Lemonade Strawberry Lta 355X4", "familia": "Lata"}, "20112": {"nombre": "Zenu Salchicha Viena 150G X 3 Un", "familia": "MKP"}, "20115": {"nombre": "La Especial Mani Cervecero 180G X 1Un", "familia": "MKP"}, "20116": {"nombre": "La Especial Sal 180G X 1Un", "familia": "MKP"}, "20124": {"nombre": "Saltin Noel Rojo 24G X 9Un", "familia": "MKP"}, "17157": {"nombre": "Becks Lata 269Cc X6 Termo Co", "familia": "Lata"}, "18473": {"nombre": "Vasos Plasticos 7Oz X 50 Un", "familia": "MKP"}, "18474": {"nombre": "Vasos Plasticos 12Oz X 50 Un", "familia": "MKP"}, "19047": {"nombre": "Yupis Salado 12G X 12Un", "familia": "MKP"}, "19365": {"nombre": "Areparepa Harina Maiz Blanca 500G X 24Un", "familia": "MKP"}, "19486": {"nombre": "Fruco Salsa Mayonesa 80G X 12Un", "familia": "MKP"}, "19561": {"nombre": "Mr Tea Limon Pet 500Ml X12 Und", "familia": "MKP"}, "19562": {"nombre": "Mr Tea Durazno Pet 500Ml X12 Und", "familia": "MKP"}, "19578": {"nombre": "Rexona Desodorante Hombreclinical8.5Gx20", "familia": "MKP"}, "19579": {"nombre": "Rexona Desodorante Mujerclinical 8.5Gx20", "familia": "MKP"}, "19580": {"nombre": "Dove Shampoo Recon Completa Sch15Mlx12", "familia": "MKP"}, "19654": {"nombre": "Hit Jugo Lulo Pet 500Mlx12Und", "familia": "Pet"}, "20013": {"nombre": "Corona Tropical Lim Fr Roj Lta 355Ml X4", "familia": "MKP"}, "20014": {"nombre": "Corona Tropical Lima Limon Lt 355Ml X4", "familia": "MKP"}, "20131": {"nombre": "Like Fusion Berries 300Mlx24 Und", "familia": "MKP"}, "20132": {"nombre": "Like Fresh Apple 300Mlx24Und", "familia": "MKP"}, "20133": {"nombre": "Like Citrus 300Mlx24Und", "familia": "MKP"}, "19088": {"nombre": "Electrolit Maracuya  625Mlx12Und", "familia": "MKP"}, "20012": {"nombre": "Corona Tropical Limon Toronja Lta 355X4", "familia": "Lata"}, "20119": {"nombre": "Speedmax 12Undx250Ml", "familia": "MKP"}, "20177": {"nombre": "Galleta Navidena Caj Surt 150G X1", "familia": "MKP"}, "20244": {"nombre": "Heinz Compota Manzana 113 Gr X 6Un", "familia": "MKP"}, "20248": {"nombre": "Heinz Salsa De Tomate Doypack 397Gr X1Un", "familia": "MKP"}, "20254": {"nombre": "Aguila Lta 330Cc X6 Mundial Fem 2023", "familia": "Lata"}, "20284": {"nombre": "Papas Clasicas Limon Pimienta 36G X 8 Un", "familia": "MKP"}, "20367": {"nombre": "Electrolit Uva 625Mlx1Und", "familia": "MKP"}, "20368": {"nombre": "Electrolit Maracuya 625Mlx1Und", "familia": "MKP"}, "20369": {"nombre": "Electrolit Mora Azul 625Mlx1Und", "familia": "MKP"}, "20370": {"nombre": "Electrolit Fresa Kiwi 625Mlx1Und", "familia": "MKP"}, "20178": {"nombre": "Natilla El Taita 300G X1", "familia": "MKP"}, "20315": {"nombre": "Pringles Original 37G X1", "familia": "MKP"}, "20488": {"nombre": "Vive100 Ultra 380Mlx6Und", "familia": "MKP"}, "19131": {"nombre": "Olmeca Reposado Tequila 350 Ml", "familia": "MKP"}, "19246": {"nombre": "Heinz Compota  Manzana 113G X 24Un", "familia": "MKP"}, "19247": {"nombre": "Heinz Compota  Pera 113G X 24Un", "familia": "MKP"}, "19629": {"nombre": "Heinz Compota Coct. Frutas 113 Gr X 24Un", "familia": "MKP"}, "19954": {"nombre": "Budweiser Rb 250Cc X38", "familia": "Botella Retornable"}, "20179": {"nombre": "Bunuelo El Taita 300G X1", "familia": "MKP"}, "20250": {"nombre": "Club Col Oktf Festbier Lta 330Cc X6", "familia": "Lata"}, "20282": {"nombre": "Corona Reusable 330Cc X30", "familia": "Botella Retornable"}, "20371": {"nombre": "Electrolit Coco 625Mlx1Und", "familia": "MKP"}, "20372": {"nombre": "Electrolit Fresa 625Mlx1Und", "familia": "MKP"}, "20489": {"nombre": "Vive100 Ultra Lata 269Mlx6Und", "familia": "MKP"}, "20549": {"nombre": "Zucaritas 115G X 1", "familia": "MKP"}, "20550": {"nombre": "Choco Krispis 115G X 1", "familia": "MKP"}, "20551": {"nombre": "Froot Loops 90G X 1", "familia": "MKP"}, "20588": {"nombre": "Mexsana Talco 85G", "familia": "MKP"}, "20668": {"nombre": "Aguila Lta 330Cc X6 Loose Pack Ln9", "familia": "Lata"}, "20672": {"nombre": "Poker Lta 330Cc X6 Loose Pack Ln9", "familia": "Lata"}, "20677": {"nombre": "Budweiser Lta 269Cc X6 Loose Pack Ln9", "familia": "Lata"}, "20683": {"nombre": "Electrolit Naranja Mandarina 625Mlx1Und", "familia": "MKP"}, "20684": {"nombre": "Electrolit Lima Limon 625Mlx1Und", "familia": "MKP"}, "20685": {"nombre": "Electrolit Manzana 625Mlx1Und", "familia": "MKP"}, "20686": {"nombre": "Electrolit Jamaica 625Mlx1Und", "familia": "MKP"}, "19129": {"nombre": "Ballantines Whisky 700 Ml", "familia": "MKP"}, "20050": {"nombre": "Corona Nrb 330Cc X6", "familia": "Botella NR"}, "20251": {"nombre": "Club Col Oktf Festbier Br 330 X30", "familia": "Botella Retornable"}, "20864": {"nombre": "Alkaseltzer 2X14 Tab & Asp Ef 500Mg 2X12", "familia": "MKP"}, "20865": {"nombre": "Apronax 275Mg Pague 22 Lleve 28", "familia": "MKP"}, "20867": {"nombre": "Coste\u00f1a Rb 330Cc X30", "familia": "Botella Retornable"}, "20877": {"nombre": "Coste\u00f1a Rb 750Cc X16", "familia": "Botella Retornable"}, "19308": {"nombre": "La Especial Kraks 25G X 12Un", "familia": "MKP"}, "20245": {"nombre": "Heinz Compota Pera 113 Gr X 6Un", "familia": "MKP"}, "20486": {"nombre": "La Especial Mix Nueces 40G X 12Un", "familia": "MKP"}, "20487": {"nombre": "La Especial Mix Arandanos 40G X12Un", "familia": "MKP"}, "20493": {"nombre": "Pony Malta Nutricion Pet 200Cc X6", "familia": "Pet"}, "20578": {"nombre": "Toallas Femeninas Kotex Normal X 24Un", "familia": "MKP"}, "20654": {"nombre": "Advil Ultra 200Mg X 20 Capsulas", "familia": "MKP"}, "20655": {"nombre": "Advil Max 400Mg X 20 Capsulas", "familia": "MKP"}, "20657": {"nombre": "Dolex Base X 50 Tabletas", "familia": "MKP"}, "20658": {"nombre": "Dolex Forte X 24 Tab (3 Packs X 8 Un)", "familia": "MKP"}, "20659": {"nombre": "Dolex Gripa X 48 Tabletas", "familia": "MKP"}, "20660": {"nombre": "Condones Today Pack Surtido X 12 Un", "familia": "MKP"}, "21125": {"nombre": "Pony Malta Pet 200Cc X6 Back To School", "familia": "Pet"}, "20281": {"nombre": "Corona Reusable 210Cc X40", "familia": "Botella Retornable"}, "20469": {"nombre": "Stella Artois Lta 269Cc X6", "familia": "Lata"}, "19130": {"nombre": "Ballantines Whisky 200 Ml", "familia": "MKP"}, "20702": {"nombre": "Imp Heinz Salsa De Tomate Doyp 190Gr X24", "familia": "MKP"}, "21182": {"nombre": "Aguila Nrb 330Cc X30", "familia": "Botella Retornable"}, "21203": {"nombre": "Poker Lta 269Cc X6 Loosepack", "familia": "Lata"}, "21159": {"nombre": "Bbc Rose Lata 269Cc X4", "familia": "Lata"}, "21161": {"nombre": "Bbc Rose Nr Bot 330Cc X4", "familia": "Botella NR"}, "21184": {"nombre": "Aguila Light Nrb 330Cc X30", "familia": "Botella Retornable"}, "21186": {"nombre": "Aguila Light Nrb 750 X16", "familia": "Botella Retornable"}, "21187": {"nombre": "Aguila Nrb 750 X16", "familia": "Botella Retornable"}, "21407": {"nombre": "Dolex Forte X 20 Tabletas", "familia": "MKP"}, "21429": {"nombre": "Electrolit Fresa 625Mlx3Und", "familia": "MKP"}, "21431": {"nombre": "Electrolit Jamaica 625Mlx3Und", "familia": "MKP"}, "21146": {"nombre": "Club Colombia Lta 473Cc X6", "familia": "Lata"}, "20967": {"nombre": "Something Special Whisky 1L", "familia": "MKP"}, "20285": {"nombre": "Golpe Con Todo Bbq 42G X 8Un", "familia": "MKP"}, "20463": {"nombre": "Stella Artois Nrb 300Cc X6", "familia": "Botella NR"}, "21447": {"nombre": "Pony Malta Less Sugar Pet 200Cc X6", "familia": "Pet"}, "21173": {"nombre": "Pony Malta Less Sugar Pet 1000Cc X15", "familia": "Pet"}, "21286": {"nombre": "Imp Heinz Salsa De Tomate Doyp 397Gr X1", "familia": "MKP"}, "21290": {"nombre": "Imp Heinz Compota Manzana 113Gr X 24Un", "familia": "MKP"}, "21291": {"nombre": "Imp Heinz Compota Pera 113 Gr X24Un", "familia": "MKP"}, "21430": {"nombre": "Electrolit Naranja Mandarina 625Mlx3Und", "familia": "MKP"}, "21457": {"nombre": "Amper Blue Six Pack 473 Ml", "familia": "MKP"}, "21550": {"nombre": "Zucaritas Dual Paq 60G X 8Un", "familia": "MKP"}, "21551": {"nombre": "Chocokrispis Dual Paq 60G X 8Un", "familia": "MKP"}, "21580": {"nombre": "Rizadas Limon 36G X 8Un", "familia": "MKP"}, "21581": {"nombre": "Rizadas Mayonesa 36G X 8Un", "familia": "MKP"}, "21633": {"nombre": "La Especial Manicero Sal 21G X 24Un", "familia": "MKP"}, "21635": {"nombre": "La Especial Manicero Arandamix 21G X 9Un", "familia": "MKP"}, "21661": {"nombre": "Electrolit Uva 625Mlx3Und", "familia": "MKP"}, "21662": {"nombre": "Electrolit Maracuya 625Mlx3Und", "familia": "MKP"}, "21663": {"nombre": "Electrolit Mora Azul 625Mlx3Und", "familia": "MKP"}, "21664": {"nombre": "Electrolit Fresa Kiwi 625Mlx3Und", "familia": "MKP"}, "21255": {"nombre": "Corona Cero Nrb 330Cc X6", "familia": "Botella NR"}, "20117": {"nombre": "Red Bull Sugar Free 250Ml X 4Un", "familia": "MKP"}, "20118": {"nombre": "Red Bull Sandia 250Ml X 4Un", "familia": "MKP"}, "20653": {"nombre": "Advil Gripa 200Mg X 20 Capsulas", "familia": "MKP"}, "21285": {"nombre": "Imp Heinz Salsa De Tomate Doyp 190Gr X1", "familia": "MKP"}, "21299": {"nombre": "Heinz Compota Coct Frutas 113Gr X1", "familia": "MKP"}, "21625": {"nombre": "Red Bull Energy 250Ml X 4Un", "familia": "MKP"}, "21627": {"nombre": "Alka Seltzer Extreme X 8 Sobres", "familia": "MKP"}, "21656": {"nombre": "Tozinetas Fred Con Miel 25G X 48Un", "familia": "MKP"}, "21657": {"nombre": "Tosti Empanada Carne 40G X 12Un", "familia": "MKP"}, "21659": {"nombre": "Tosti Nachos Queso 40G X 12Un", "familia": "MKP"}, "21703": {"nombre": "Pony Malta Go Pet 2.0L X6", "familia": "Pet"}, "21806": {"nombre": "Costena Bacana Lata 330Cc Loosepack X6", "familia": "Lata"}, "21828": {"nombre": "Golpe Con Todo Bbq Ext Cont 60G X 1Un", "familia": "MKP"}, "21830": {"nombre": "Golpe Con Todo Ranchero Extcont 60G X1Un", "familia": "MKP"}, "21155": {"nombre": "Club Colombia Trigo Lta 330 X6", "familia": "Lata"}, "21156": {"nombre": "Club Colombia Trigo Rb 330Cc X30", "familia": "Botella Retornable"}, "21166": {"nombre": "Club Colombia Trigo Nrb 330Cc X24 Reemp", "familia": "Botella NR"}, "19128": {"nombre": "The Glenlivet Founders Whisky 700 Ml", "familia": "MKP"}, "20656": {"nombre": "Chapstick Surtido Tiendas X 4Un", "familia": "MKP"}, "15150": {"nombre": "Chivas Regal 12 A\u00f1os 200 Ml", "familia": "MKP"}, "21189": {"nombre": "Michelob Ultra Lata 269Cc X6 Pl", "familia": "Lata"}, "21405": {"nombre": "Mexsana Talco 150G Y Mexsana Talco 85G", "familia": "MKP"}, "21454": {"nombre": "Like Sixpack X 300 Ml Apple", "familia": "MKP"}, "21681": {"nombre": "Four Loko Ponche De Frutas 473Ml X 6Un", "familia": "MKP"}, "21684": {"nombre": "Four Loko Green Apple 473Ml X 6Un", "familia": "MKP"}, "21685": {"nombre": "Four Loko Blue 355Ml X 4Un", "familia": "MKP"}, "21686": {"nombre": "Four Loko Sandia 355Ml X 4Un", "familia": "MKP"}, "21687": {"nombre": "Four Loko Gold 355Ml X 4Un", "familia": "MKP"}, "21688": {"nombre": "Four Loko Purple 355Ml X 4Un", "familia": "MKP"}, "21951": {"nombre": "Budweiser Lta 269Cc X12 Ln9", "familia": "Lata"}, "21959": {"nombre": "Pony Malta Go Less Sugar Pet 1.5L X6", "familia": "Pet"}, "21970": {"nombre": "Smirnoff Tamarindo Picante 750Mlx 1", "familia": "MKP"}, "22006": {"nombre": "Aguila Orig Lta 330Cc X12 Ln9", "familia": "Lata"}, "22040": {"nombre": "Mani Crocantechile Limon Manitoba 170Gx1", "familia": "MKP"}, "22041": {"nombre": "Mani Confitado Manitoba 25G X 8Un", "familia": "MKP"}, "22043": {"nombre": "Mani Con Sal Manitoba 25G X 8Un", "familia": "MKP"}, "22044": {"nombre": "Mani Limon Pimienta Manitoba 160G X 1Un", "familia": "MKP"}, "22104": {"nombre": "19 Pack Surtido Yupi X 672G Verde", "familia": "MKP"}, "22106": {"nombre": "14 Pack Surtido Yupi X 683G Azul", "familia": "MKP"}, "22175": {"nombre": "Electrolit Fruit Punch 625Mlx3Und", "familia": "MKP"}, "22202": {"nombre": "Bbc Cajic\u00e1 Miel Barril 29.7", "familia": "Barril"}, "21628": {"nombre": "Pedialyte Active 30 Cereza 500Ml X3", "familia": "MKP"}, "21629": {"nombre": "Pedialyte Active 30 Coco 500Ml X3", "familia": "MKP"}, "21630": {"nombre": "Pedialyte Max 60 Manzana 500Ml X 3", "familia": "MKP"}, "21631": {"nombre": "Pedialyte Max 60 Uva 500Ml X3", "familia": "MKP"}, "21632": {"nombre": "Pedialyte Max 60 Fresa 500Ml X3", "familia": "MKP"}, "21682": {"nombre": "Four Loko Blue 473Ml X 6Un", "familia": "MKP"}, "21683": {"nombre": "Four Loko Purple 473Ml X 6Un", "familia": "MKP"}, "21730": {"nombre": "Redds Rose Lta 269Cc X6", "familia": "Lata"}, "21871": {"nombre": "Aguila Imperial Rb 330Cc X30", "familia": "Botella Retornable"}, "22003": {"nombre": "Bbc Monserrate Roja Brr 29.7L X1", "familia": "Barril"}, "22101": {"nombre": "Coste\u00f1a Bacana Lta 473Cc X6", "familia": "Lata"}, "22135": {"nombre": "Cola & Pola Lta 269Cc X6", "familia": "Lata"}, "22174": {"nombre": "Like Citrus 300Ml X 6Un", "familia": "MKP"}, "22080": {"nombre": "Amper Sxp Pred 473Ml", "familia": "MKP"}, "19093": {"nombre": "Rizadas Mayonesa 105G", "familia": "MKP"}, "21582": {"nombre": "Golpe Con Todo Bbq 50G X 8Un", "familia": "MKP"}, "21583": {"nombre": "Golpe Con Todo Ranchero 50G X 8Un", "familia": "MKP"}, "21719": {"nombre": "Buchanans Deluxe Whisky 1000Ml", "familia": "MKP"}, "22039": {"nombre": "Michelob Ultra Ambar Nr 355Cc X6 Mx", "familia": "Botella NR"}, "22124": {"nombre": "Budweiser Rb 330Cc X30", "familia": "Botella Retornable"}, "22142": {"nombre": "Aguila Imperial Nrb 330Cc X6 Reemp", "familia": "Botella NR"}, "22242": {"nombre": "Corona Cero 269 Lta X6 Reemp", "familia": "Lata"}, "22272": {"nombre": "Pony Malta Go Rb 330Cc X30", "familia": "Botella Retornable"}, "22291": {"nombre": "Colgate Crema Triple Accion 75Ml X 3Un", "familia": "MKP"}, "22301": {"nombre": "Smirnoff Ice  Red       275Ml X1", "familia": "MKP"}, "22302": {"nombre": "Smirnoff Ice Red Lata    250Ml X 1", "familia": "MKP"}, "22303": {"nombre": "Smirnoff Ice Green Lata 250Ml X 1", "familia": "MKP"}, "22304": {"nombre": "Smirnoff Ice Green Apple  275 Ml X 1", "familia": "MKP"}, "22335": {"nombre": "Buchanans Deluxe 375Ml X 1", "familia": "MKP"}, "22410": {"nombre": "Quipitos Pops 8G X 24 Sobres", "familia": "MKP"}, "22411": {"nombre": "Spartan Energy 310Ml X 6Un", "familia": "MKP"}, "22412": {"nombre": "Vive 100 Regular Lata 310 Ml X 6Un", "familia": "MKP"}, "22423": {"nombre": "Gaseosa Pool Cola 250 Ml X 12 Und", "familia": "MKP"}, "22424": {"nombre": "Gaseosas Pool Manzana 250 Ml X 12 Und", "familia": "MKP"}, "22425": {"nombre": "Gaseosa Pool Colombia 250 Ml X 12 Und", "familia": "MKP"}, "22426": {"nombre": "Gaseosa Pool Cola 400 Ml X 24 Und", "familia": "MKP"}, "22427": {"nombre": "Gaseosa Pool Manzana 400 Ml X 24 Und", "familia": "MKP"}, "22428": {"nombre": "Gaseosa Pool Colombia 400 Ml X 24 Und", "familia": "MKP"}, "22430": {"nombre": "Gaseosa Pool Cola 1700 Ml X 8 Und", "familia": "MKP"}, "22431": {"nombre": "Gaseosa Pool Cola 3020 Ml X 6 Und", "familia": "MKP"}, "22432": {"nombre": "Hydratate Pool Tropical 500 Ml X 12 Und", "familia": "MKP"}, "22433": {"nombre": "Agua Pool Limon 600 Ml X 12 Und", "familia": "MKP"}, "22434": {"nombre": "Agua Pool Maracuya 600 Ml X 12 Und", "familia": "MKP"}, "22435": {"nombre": "Agua Pool Sin Gas 300 Ml X 24 Und", "familia": "MKP"}, "22436": {"nombre": "Agua Pool Con Gas 600 Ml X 20 Und", "familia": "MKP"}, "22437": {"nombre": "Agua Pool Sin Gas 600 Ml X 20 Und", "familia": "MKP"}, "22438": {"nombre": "Refresco Sabor Mango Pool X 250 Ml X 24", "familia": "MKP"}, "17671": {"nombre": "Hit Jugo Naranja Pina 500Ml X 12Un", "familia": "MKP"}, "21177": {"nombre": "Modelo Especial Nrb 355Cc X6 Impo", "familia": "Lata"}, "21585": {"nombre": "Tosti Empanada Limon 35G X 12Un", "familia": "MKP"}, "22078": {"nombre": "Like Sixpack Blue Berry X 300Ml", "familia": "MKP"}, "22256": {"nombre": "Poker Lta 330Cc X12 Shrinkpack", "familia": "Lata"}, "22282": {"nombre": "Pony Malta Less Sugar Pet 200Cc 5X6", "familia": "Pet"}, "22406": {"nombre": "Yupi Papas Clasicas Bbq 22G X 12Un", "familia": "MKP"}, "22407": {"nombre": "Golpe Con Todo Bbq 60G X 8Un", "familia": "MKP"}, "22408": {"nombre": "Golpe Con Todo Ranchero 60G X 8Un", "familia": "MKP"}, "22421": {"nombre": "Los Cuates Pack Surtido 269Ml X 6Un", "familia": "MKP"}, "22519": {"nombre": "Whisky Johnnie Walker 200 Ml X 1 Und", "familia": "MKP"}, "22523": {"nombre": "Whisky Black And White200Mlx1", "familia": "MKP"}, "21848": {"nombre": "Antioqueno Aguardiente Sa Verde 1750Mlx1", "familia": "MKP"}, "22105": {"nombre": "19 Pack Surtido Yupi X 632G Negro", "familia": "MKP"}, "22298": {"nombre": "Buchanans Master 750Ml X1", "familia": "MKP"}, "22299": {"nombre": "Gordons Dry Gin 700Ml  X1", "familia": "MKP"}, "22336": {"nombre": "Old Parr 12 A\u00f1os X 500Ml X 1", "familia": "MKP"}, "22363": {"nombre": "Redds Citrus Rb 330 X30", "familia": "MKP"}, "22405": {"nombre": "Yupi Papas Clasicas Pollo 22G X 12Un", "familia": "MKP"}, "22495": {"nombre": "Rizadas Tomate 36G X 8Un", "familia": "MKP"}, "21718": {"nombre": "Old Parr Whisky 1000Ml", "familia": "MKP"}, "22429": {"nombre": "Soda Carbonatada Pool 400 Ml X 24 Und", "familia": "MKP"}, "22102": {"nombre": "Coste\u00f1a Bacana Lta 269Cc X6", "familia": "Lata"}, "22300": {"nombre": "Gordons Premiun Pink  700 Ml   X1", "familia": "MKP"}, "22315": {"nombre": "Aguila Light Can 330Cc X6 Thermo Ink", "familia": "Lata"}, "22601": {"nombre": "Pool Energy 300Ml X12Und", "familia": "MKP"}, "22271": {"nombre": "Coste\u00f1a Lata 310Cc X6", "familia": "Lata"}, "22613": {"nombre": "Aguila Light Rb 330Cc X30 Thermo Ink", "familia": "Botella Retornable"}, "22691": {"nombre": "Like Mango 300Mlx24 Und", "familia": "MKP"}, "22579": {"nombre": "Corona Extra Can 473Cc X6 Reemp", "familia": "Lata"}, "22700": {"nombre": "Smirnoff Tamarindo Picante 375Ml X 1", "familia": "MKP"}, "22701": {"nombre": "Buchanan\u00b4S Deluxe 200Ml X 1", "familia": "MKP"}, "22270": {"nombre": "Kaufmann Lata 310Cc X6", "familia": "lata"}, "23121": {"nombre": "Cola & Pola Roja Lata 330Cc X6", "familia": "Lata"}, "22269": {"nombre": "Azteca Lata 310Cc X6", "familia": "Lata"}, "22867": {"nombre": "Michelob Ultra Nr 330Cc X24", "familia": "Botella NR"}, "22265": {"nombre": "Bahia Lager Lata 310Cc X6", "familia": "Lata"}, "22866": {"nombre": "Michelob Ultra Nr 330Cc X6", "familia": "Botella NR"}, "23047": {"nombre": "Azteca Light Lata 310Cc X6", "familia": "Lata"}};
+
+// ── CONSTANTES ─────────────────────────────────────────
+const MOT_BAV  = ['Mala Calidad','Faltante Unidades'];
+const MOT_FACT = ['Faltante Carga','Trocado'];
+const MOT_ALL  = [...MOT_BAV, ...MOT_FACT];
+
+const RL = {
+  ruta:           'Supervisor de Ruta',
+  bavaria:        'Supervisor Bavaria',
+  facturacion:    'Facturacion',
+  ol:             'Supervisor OL',
+  facturacion_ol: 'Facturacion / OL',
+  verificador:    'Verificador'
+};
+
+// ESTADOS Y SU ETIQUETA
+// Flujo para cambio y entrega:
+//   pendiente → aprobado_bavaria/aprobado_facturacion → en_almacen → en_ol → cerrado
+// Flujo sin cambio:
+//   pendiente → aprobado_bavaria/aprobado_facturacion → en_almacen → cerrado
+const EST_LABEL = {
+  pendiente:            'Pendiente',
+  aprobado_bavaria:     'Aprobado Bavaria',
+  aprobado_facturacion: 'Aprobado Facturacion',
+  rechazado:            'Rechazado',
+  en_almacen:           'Despachado',
+  en_ol:                'Despachado por OL - Pendiente entrega cliente',
+  cerrado:              'Cerrado'
+};
+
+// Pasos del flujo visual
+const PAS_CAMBIO   = ['Reporte','Aprobacion','OL despacha a Ruta','Ruta cierra con cliente'];
+const PAS_NORMAL   = ['Reporte','Aprobacion','OL despacha a Ruta','Ruta cierra con cliente'];
+
+let role=null, novs=[], notifs={}, unsub=null, motivoSel=null, cambioEntrega=null, fotos=[];
+let currentNovId=null;
+
+function ts(){return new Date().toLocaleString('es-CO',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});}
+function uid(){return 'DQI-'+Date.now().toString(36).toUpperCase().slice(-6);}
+function isR(){return role==='ruta';}
+function isB(){return role==='bavaria';}
+function isF(){return role==='facturacion'||role==='facturacion_ol';}
+function isOL(){return role==='ol'||role==='facturacion_ol';}
+function isVerif(){return role==='verificador';}
+
+function getMot(n){ return n.motivo||(n.motivos&&n.motivos[0])||''; }
+function getAprobador(mot){ return MOT_BAV.includes(mot)?'bavaria':'facturacion'; }
+function getEstAprobado(mot){ return MOT_BAV.includes(mot)?'aprobado_bavaria':'aprobado_facturacion'; }
+function esCambio(n){ return n.cambioEntrega==='si'; }
+
+// ── NOTIFS ─────────────────────────────────────────────
+function loadN(){try{notifs=JSON.parse(localStorage.getItem('dqin4')||'{}');}catch(e){notifs={};}}
+function saveN(){localStorage.setItem('dqin4',JSON.stringify(notifs));}
+function myN(){return notifs[role]||[];}
+function addN(roles,msg,id){
+  roles.forEach(function(r){
+    if(!notifs[r])notifs[r]=[];
+    notifs[r].unshift({msg:msg,id:id,ts:ts(),read:false});
+    if(notifs[r].length>30)notifs[r].pop();
+  });
+  saveN();
+}
+
+// ── ROL ────────────────────────────────────────────────
+
+
+
+
+
+
+// ── LOGIN SYSTEM ───────────────────────────────────────
+var usuarios=[], usuarioActual=null, pinIngresado='';
+
+function cargarUsuarios(){
+  if(!window._ready){window.addEventListener('firebaseReady',cargarUsuarios);return;}
+  window._snap(window._col(window._db,'usuarios'),function(snap){
+    usuarios=snap.docs.map(function(d){return Object.assign({},d.data(),{_id:d.id});});
+    renderUserList();
+  });
+}
+
+var ROLE_ICONS={ruta:'ti-route',bavaria:'ti-building-warehouse',facturacion:'ti-receipt',ol:'ti-package',facturacion_ol:'ti-arrows-exchange',verificador:'ti-eye'};
+var ROLE_COLORS={ruta:'var(--amber)',bavaria:'var(--bav-red)',facturacion:'var(--green)',ol:'var(--teal)',facturacion_ol:'var(--purple)',verificador:'var(--gray-text)'};
+
+function renderUserList(){
+  var ul=document.getElementById('userList'); if(!ul)return;
+  if(!usuarios.length){
+    ul.innerHTML='<div style="text-align:center;padding:20px;font-size:13px;color:var(--text2)">No hay usuarios registrados.<br>Agrega usuarios en Firebase → Coleccion <strong>usuarios</strong></div>';
+    return;
+  }
+  ul.innerHTML=usuarios.map(function(u){
+    var ini=(u.nombre||'?')[0].toUpperCase();
+    var color=ROLE_COLORS[u.rol]||'var(--bav-red)';
+    return '<button class="user-btn" data-uid="'+u._id+'">'+
+      '<div class="user-avatar" style="background:'+color+'">'+ini+'</div>'+
+      '<div><div class="user-name">'+u.nombre+'</div><div class="user-rol">'+(RL[u.rol]||u.rol)+'</div></div>'+
+    '</button>';
+  }).join('');
+  ul.querySelectorAll('.user-btn').forEach(function(btn){
+    btn.onclick=function(){
+      var uid=this.getAttribute('data-uid');
+      var u=usuarios.find(function(x){return x._id===uid;});
+      if(u) mostrarPIN(u);
+    };
+  });
+}
+
+function mostrarPIN(u){
+  usuarioActual=u; pinIngresado='';
+  document.getElementById('loginStep1').style.display='none';
+  document.getElementById('loginStep2').style.display='block';
+  document.getElementById('loginAvatar').textContent=(u.nombre||'?')[0].toUpperCase();
+  document.getElementById('loginAvatar').style.background=ROLE_COLORS[u.rol]||'var(--bav-red)';
+  document.getElementById('loginNombre').textContent=u.nombre;
+  document.getElementById('loginRolLabel').textContent=RL[u.rol]||u.rol;
+  document.getElementById('pinError').style.display='none';
+  actualizarDots();
+}
+
+function actualizarDots(){
+  document.querySelectorAll('.pin-dot').forEach(function(d,i){
+    d.classList.toggle('filled', i<pinIngresado.length);
+  });
+}
+
+document.addEventListener('click',function(e){
+  var pb=e.target.closest('.pin-btn[data-n]');
+  if(pb&&pinIngresado.length<4){
+    pinIngresado+=pb.getAttribute('data-n');
+    actualizarDots();
+    if(pinIngresado.length===4) setTimeout(verificarPIN,100);
+  }
+  var pc=e.target.closest('#pinClear');
+  if(pc){pinIngresado=pinIngresado.slice(0,-1);actualizarDots();}
+  var po=e.target.closest('#pinOk');
+  if(po) verificarPIN();
+  var bl=e.target.closest('#btnBackLogin');
+  if(bl){
+    document.getElementById('loginStep2').style.display='none';
+    document.getElementById('loginStep1').style.display='block';
+    pinIngresado=''; usuarioActual=null;
+  }
+});
+
+function verificarPIN(){
+  if(!usuarioActual) return;
+  if(pinIngresado===String(usuarioActual.pin)){
+    document.getElementById('pinError').style.display='none';
+    selRole(usuarioActual.rol, usuarioActual.nombre);
+  } else {
+    document.getElementById('pinError').style.display='block';
+    pinIngresado=''; actualizarDots();
+    setTimeout(function(){document.getElementById('pinError').style.display='none';},2000);
+  }
+}
+
+// Start login flow
+cargarUsuarios();
+
+function selRole(r,nombreUsuario){
+  role=r; loadN();
+  document.getElementById('roleScreen').style.display='none';
+  document.getElementById('mainApp').style.display='block';
+  document.getElementById('roleTag').textContent=RL[r];
+  buildNav();
+  if(window._ready) startL();
+  showV('dashboard');
+  setTimeout(function(){
+    if('Notification' in window){
+      if(Notification.permission==='default'){
+        Notification.requestPermission().then(function(p){
+          checkNotifBtn();
+          if(p==='granted') enviarNotifPush('Bienvenido a Bavaria DQI', (nombreUsuario||RL[r])+' - '+RL[r]);
+        });
+      } else { checkNotifBtn(); }
+    }
+  },1000);
+}
+
+function cambiarRol(){
+  if(unsub){unsub();unsub=null;}
+  role=null; novs=[]; usuarioActual=null; pinIngresado='';
+  document.getElementById('mainApp').style.display='none';
+  document.getElementById('roleScreen').style.display='flex';
+  document.getElementById('loginStep1').style.display='block';
+  document.getElementById('loginStep2').style.display='none';
+  document.getElementById('notifPanel').style.display='none';
+  closeModal();
+  renderUserList();
+}
+
+window.addEventListener('firebaseReady',function(){if(role)startL();});
+
+function buildNav(){
+  var nav=document.getElementById('bottomNav'); nav.innerHTML='';
+  var tabs=[['dashboard','layout-dashboard','Resumen'],['novedades','list-details','Novedades']];
+  if(isR()) tabs.push(['reportar','circle-plus','Reportar']);
+  tabs.forEach(function(t,i){
+    var b=document.createElement('button');
+    b.className='nav-tab'+(i===0?' active':''); b.id='tab-'+t[0];
+    b.innerHTML='<i class="ti ti-'+t[1]+'"></i>'+t[2]+(t[0]==='novedades'?'<span class="nav-badge" id="nvb"></span>':'');
+    b.onclick=function(){showV(t[0]);};
+    nav.appendChild(b);
+  });
+}
+
+// Global delegated click handler for back buttons and cards
+document.getElementById('contentArea').addEventListener('click', function(e){
+  var ft=e.target.closest('.foto-thumb[data-fi]');
+  if(ft){
+    var nid=ft.getAttribute('data-nid');
+    var fi=+ft.getAttribute('data-fi');
+    var arrName=ft.getAttribute('data-arr')||'fotos';
+    var nov=novs.find(function(x){return x._id===nid;});
+    if(nov&&nov[arrName]&&nov[arrName].length){
+      abrirViewer(nov[arrName], fi);
+    }
+    return;
+  }
+  var bb=e.target.closest('#btnBackDash,#btnBackDashForm');
+  if(bb){showV('dashboard');return;}
+  var nc=e.target.closest('.nov-card[data-novid],.dash-nov-card[data-novid]');
+  if(nc){abrirNov(nc.getAttribute('data-novid'));return;}
+  var vm=e.target.closest('#dashVerMas,#dashBtnNovs,#dashBtnNovs2,#dashBtnNovs3');
+  if(vm){showV('novedades');return;}
+  var rp=e.target.closest('#dashBtnReportar');
+  if(rp){showV('reportar');return;}
+  var pd=e.target.closest('#dashBtnPend');
+  if(pd){verPendientes();return;}
+  var st=e.target.closest('#dashStatTot');  if(st){filtrarYver('');return;}
+  var sp=e.target.closest('#dashStatPen');  if(sp){filtrarYver('pendiente');return;}
+  var spr=e.target.closest('#dashStatProc');if(spr){filtrarYver('en_ol');return;}
+  var sc=e.target.closest('#dashStatCerr'); if(sc){filtrarYver('cerrado');return;}
+});
+
+function startL(){
+  if(!window._ready) return;
+  if(unsub) unsub();
+  unsub=window._snap(window._q(window._col(window._db,'novedades'),window._ord('creadoEn','desc')),function(snap){
+    novs=snap.docs.map(function(d){return Object.assign({},d.data(),{_id:d.id});});
+    var cur=document.querySelector('.nav-tab.active');
+    if(cur){var v=cur.id.replace('tab-',''); if(v!=='reportar') refr(v);}
+    badge();
+    if(currentNovId){
+      var n=novs.find(function(x){return x._id===currentNovId;});
+      if(n) renderModal(n);
+    }
+  });
+}
+
+function refr(v){
+  var a=document.getElementById('contentArea');
+  if(v==='dashboard') dash(a); else if(v==='novedades') listV(a);
+}
+
+function showV(v){
+  document.querySelectorAll('.nav-tab').forEach(function(t){t.classList.toggle('active',t.id==='tab-'+v);});
+  motivoSel=null; cambioEntrega=null; fotos=[];
+  var a=document.getElementById('contentArea');
+  if(v==='dashboard') dash(a);
+  else if(v==='novedades') listV(a);
+  else if(v==='reportar') formV(a);
+  document.getElementById('notifPanel').style.display='none';
+}
+
+function badge(){
+  var count=0;
+  if(isB())  count=novs.filter(function(n){return n.estado==='pendiente'&&MOT_BAV.includes(getMot(n));}).length;
+  if(isF())  count=novs.filter(function(n){return n.estado==='pendiente'&&MOT_FACT.includes(getMot(n));}).length;
+  if(isOL()) count=novs.filter(function(n){return n.estado==='aprobado_bavaria'||n.estado==='aprobado_facturacion';}).length;
+  if(isR())  count=novs.filter(function(n){return n.estado==='en_ol';}).length;
+  var b=document.getElementById('nvb');
+  if(b){b.style.display=count>0?'block':'none'; b.textContent=count;}
+}
+
+function pill(e){return '<span class="pill s-'+e+'">'+(EST_LABEL[e]||e)+'</span>';}
+
+function routeTag(mot){
+  return MOT_BAV.includes(mot)
+    ?'<span class="tag-bav">Bavaria</span>'
+    :'<span class="tag-fact">Facturacion</span>';
+}
+
+function stpHtml(n){
+  var estado=n.estado;
+  var pasos=esCambio(n)?PAS_CAMBIO:PAS_NORMAL;
+  var mapC={pendiente:0,aprobado_bavaria:1,aprobado_facturacion:1,rechazado:-1,en_almacen:1,en_ol:2,cerrado:3};
+  var mapN={pendiente:0,aprobado_bavaria:1,aprobado_facturacion:1,rechazado:-1,en_almacen:1,en_ol:2,cerrado:3};
+  var map=esCambio(n)?mapC:mapN;
+  var cur=map[estado]!==undefined?map[estado]:0;
+  return pasos.map(function(s,i){
+    var c='stp';
+    if(estado==='rechazado'&&i===1) c='stp blocked';
+    else if(i<cur) c='stp done';
+    else if(i===cur) c='stp active';
+    return '<span class="'+c+'">'+s+'</span>'+(i<pasos.length-1?'<span class="sarr">&rsaquo;</span>':'');
+  }).join('');
+}
+
+function card(n){
+  var mo=getMot(n);
+  var cambioTag=esCambio(n)?'<span class="tag-si">Cambio y entrega</span>':'';
+  return '<div class="nov-card" data-novid="'+n._id+'">'+ 
+    '<div class="nov-header"><span class="nov-id">'+(n.id||n._id)+'</span>'+pill(n.estado)+'</div>'+
+    '<div class="nov-cliente">'+n.cliente+'</div>'+
+    '<div class="nov-meta"><span class="mtag">'+mo+'</span>'+routeTag(mo)+cambioTag+' SKU: '+n.sku+' &middot; '+(n.cantidad||'-')+' und</div>'+
+    '<div class="nov-sub">Transp: '+(n.nTransporte||'-')+' &middot; Placa: '+(n.placa||'-')+' &middot; '+(n.responsable||n.supervisorNombre||'-')+' &middot; '+n.fecha+'</div>'+
+  '</div>';
+}
+
+// ── DASHBOARD ──────────────────────────────────────────
+function dash(a){
+  var tot=novs.length;
+  var baseOL=novs.filter(function(n){return ['aprobado_bavaria','aprobado_facturacion','en_ol','cerrado'].includes(n.estado);});
+  if(isOL()) tot=baseOL.length;
+  var pen=novs.filter(function(n){return n.estado==='pendiente';}).length;
+  var miPen=pen; // For stats we show total pendientes
+  if(isF()) miPen=novs.filter(function(n){return n.estado==='pendiente'&&MOT_FACT.includes(getMot(n));}).length;
+  if(isB()) miPen=novs.filter(function(n){return n.estado==='pendiente'&&MOT_BAV.includes(getMot(n));}).length;
+  var proc=novs.filter(function(n){return ['aprobado_bavaria','aprobado_facturacion','en_almacen','en_ol'].includes(n.estado);}).length;
+  if(isOL()) proc=novs.filter(function(n){return n.estado==='en_ol';}).length;
+  var cerr=novs.filter(function(n){return n.estado==='cerrado';}).length;
+  var rech=novs.filter(function(n){return n.estado==='rechazado';}).length;
+
+  var misPend=[];
+  if(isB())      misPend=novs.filter(function(n){return n.estado==='pendiente'&&MOT_BAV.includes(getMot(n));});
+  else if(isF()) misPend=novs.filter(function(n){return n.estado==='pendiente'&&MOT_FACT.includes(getMot(n));});
+  // Facturacion solo ve sus motivos (Trocado y Faltante Carga)
+  else if(isOL()) misPend=novs.filter(function(n){return n.estado==='aprobado_bavaria'||n.estado==='aprobado_facturacion';});
+  else if(isR()) misPend=novs.filter(function(n){return n.estado==='en_ol';});
+  else misPend=novs.filter(function(n){return !['cerrado','rechazado'].includes(n.estado);});
+
+  var aprobFact=novs.filter(function(n){return n.estado==='aprobado_facturacion';});
+  var alertaB=isB()&&aprobFact.length>0
+    ?'<div class="dash-alert"><i class="ti ti-info-circle"></i> Facturaci&oacute;n aprob&oacute; <strong>'+aprobFact.length+'</strong> caso(s) de Faltante Carga / Trocado</div>'
+    :'';
+
+  // Role greeting
+  var roleColor={ruta:'var(--amber)',bavaria:'var(--blue)',facturacion:'var(--green)',ol:'var(--teal)',verificador:'var(--gray-text)'};
+  var roleIcon={ruta:'ti-route',bavaria:'ti-building-warehouse',facturacion:'ti-receipt',ol:'ti-package',verificador:'ti-eye'};
+  var color=roleColor[role]||'var(--blue)';
+  var icon=roleIcon[role]||'ti-user';
+
+  // Quick action buttons
+  var acciones='';
+  if(isR()){
+    acciones=
+      '<div class="dash-actions">'+
+        '<button class="dash-action-btn primary" id="dashBtnReportar">'+
+          '<i class="ti ti-circle-plus"></i>'+
+          '<span>Registrar nuevo caso</span>'+
+        '</button>'+
+        '<button class="dash-action-btn" id="dashBtnNovs">'+
+          '<i class="ti ti-list-details"></i>'+
+          '<span>Ver todos los casos</span>'+
+        '</button>'+
+      '</div>';
+  } else if(isB()||isF()||isOL()){
+    acciones=
+      '<div class="dash-actions">'+
+        '<button class="dash-action-btn primary" id="dashBtnPend">'+
+          '<i class="ti ti-clock"></i>'+
+          '<span>Ver mis pendientes</span>'+
+          (misPend.length>0?'<span class="dash-badge">'+misPend.length+'</span>':'')+
+        '</button>'+
+        '<button class="dash-action-btn" id="dashBtnNovs2">'+
+          '<i class="ti ti-list-details"></i>'+
+          '<span>Todos los casos</span>'+
+        '</button>'+
+      '</div>';
+  } else {
+    acciones=
+      '<div class="dash-actions">'+
+        '<button class="dash-action-btn" id="dashBtnNovs3">'+
+          '<i class="ti ti-list-details"></i>'+
+          '<span>Ver todos los casos</span>'+
+        '</button>'+
+      '</div>';
+  }
+
+  // Stats row
+  var statsHtml=
+    '<div class="dash-stats">'+
+      '<div class="dash-stat" id="dashStatTot">'+
+        '<div class="dash-stat-num">'+tot+'</div>'+
+        '<div class="dash-stat-label">'+(isOL()?'Mis casos':'Total')+'</div>'+
+      '</div>'+
+      '<div class="dash-stat warn" id="dashStatPen">'+
+        '<div class="dash-stat-num">'+miPen+'</div>'+
+        '<div class="dash-stat-label">Pendientes</div>'+
+      '</div>'+
+      '<div class="dash-stat info" id="dashStatProc">'+
+        '<div class="dash-stat-num">'+proc+'</div>'+
+        '<div class="dash-stat-label">En proceso</div>'+
+      '</div>'+
+      '<div class="dash-stat ok" id="dashStatCerr">'+
+        '<div class="dash-stat-num">'+cerr+'</div>'+
+        '<div class="dash-stat-label">Cerradas</div>'+
+      '</div>'+
+    '</div>';
+
+  // Pending cards
+  var pendHtml='';
+  if(misPend.length===0){
+    pendHtml='<div class="dash-empty"><i class="ti ti-circle-check"></i><div>Todo al d&iacute;a</div><div style="font-size:13px;color:var(--text2);margin-top:4px">No tienes pendientes en este momento</div></div>';
+  } else {
+    pendHtml=misPend.slice(0,4).map(function(n){
+      var mo=getMot(n);
+      var cambioTag=n.cambioEntrega==='si'?'<span class="tag-si">Cambio</span>':'';
+      return '<div class="dash-nov-card" data-novid="'+n._id+'">'+
+        '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px">'+
+          '<span style="font-size:11px;font-family:monospace;color:var(--text3)">'+(n.id||n._id)+'</span>'+
+          pill(n.estado)+
+        '</div>'+
+        '<div style="font-size:15px;font-weight:700;margin-bottom:5px">'+n.cliente+'</div>'+
+        '<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--text2)">'+
+          '<span class="mtag">'+mo+'</span>'+cambioTag+
+          ' SKU: '+n.sku+' &middot; '+(n.cantidad||'-')+' und'+
+        '</div>'+
+        '<div style="font-size:11px;color:var(--text3);margin-top:4px">'+
+          'Placa: '+(n.placa||'-')+' &middot; '+n.supervisorNombre+' &middot; '+n.fecha+
+        '</div>'+
+      '</div>';
+    }).join('');
+    if(misPend.length>4){
+      pendHtml+='<div class="dash-ver-mas" id="dashVerMas">Ver '+(misPend.length-4)+' m&aacute;s &rarr;</div>';
+    }
+  }
+
+  a.innerHTML=
+    '<div class="dash-header">'+
+      '<div class="dash-role-icon" style="background:'+color+'20;color:'+color+'"><i class="ti '+icon+'"></i></div>'+
+      '<div>'+
+        '<div class="dash-bienvenida">Bienvenido</div>'+
+        '<div class="dash-rolename">'+(usuarioActual&&usuarioActual.nombre?usuarioActual.nombre:RL[role])+'</div>'+
+        '<div style="font-size:11px;color:var(--text2);margin-top:2px">'+(RL[role]||'')+'</div>'+
+      '</div>'+
+    '</div>'+
+    alertaB+
+    acciones+
+    statsHtml+
+    (isVerif()?
+      '<div class="dash-section-title">Resumen reciente</div>'+
+      novs.slice(0,4).map(card).join('')+
+      (novs.length>4?'<div class="dash-ver-mas" id="dashVerMas">Ver todos los casos &rarr;</div>':'')
+    :
+      '<div class="dash-section-title">'+
+        (misPend.length>0?'<span class="dash-pend-dot"></span>':'')+
+        'Mis pendientes'+(misPend.length>0?' ('+misPend.length+')':'')+
+      '</div>'+
+      pendHtml
+  );
+
+
+}
+
+function verPendientes(){
+  showV('novedades');
+  setTimeout(function(){
+    var filt=document.getElementById('filt');
+    if(filt){
+      if(isOL()) filt.value='aprobado_bavaria';
+      else if(isF()) filt.value='pendiente';
+      else filt.value='pendiente';
+      applyF();
+    }
+  },100);
+}
+
+function filtrarYver(estado){
+  showV('novedades');
+  setTimeout(function(){
+    var filt=document.getElementById('filt');
+    if(filt){filt.value=estado;applyF();}
+  },100);
+}
+
+// ── LISTA ──────────────────────────────────────────────
+function listV(a){
+  var extraFechas = '';
+  if(isVerif()){
+    var bf=document.createElement('div');
+    bf.style.cssText='display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px';
+    var row1=document.createElement('div');
+    row1.style.cssText='display:flex;gap:6px;flex-wrap:wrap';
+    [['fdHoy','Hoy','hoy',true],['fdSem','Esta semana','semana',false],['fdMes','Este mes','mes',false],['fdTodo','Todos','todo',false]].forEach(function(x){
+      var b=document.createElement('button');
+      b.className='fdate-btn'+(x[3]?' active':'');
+      b.id=x[0]; b.textContent=x[1]; b.setAttribute('data-p',x[2]);
+      row1.appendChild(b);
+    });
+    var row2=document.createElement('div');
+    row2.style.cssText='display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px';
+    row2.innerHTML='<label style="font-size:12px;color:var(--text2);margin:0">Desde:</label>'+
+      '<input type="date" id="fdDesde" style="width:auto;padding:6px 8px;font-size:13px">'+
+      '<label style="font-size:12px;color:var(--text2);margin:0">Hasta:</label>'+
+      '<input type="date" id="fdHasta" style="width:auto;padding:6px 8px;font-size:13px">';
+    bf.appendChild(row1); bf.appendChild(row2);
+    extraFechas=bf.outerHTML;
+  }
+
+  a.innerHTML=
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">'+
+    '<button id="btnBackDash" style="background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 12px;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2)"><i class="ti ti-arrow-left"></i> Inicio</button>'+
+    '<div class="section-title" style="margin:0">Novedades DQI</div>'+
+  '</div>'+
+    extraFechas+
+    '<div class="frow2" style="margin-bottom:10px">'+
+      '<span style="font-size:13px;color:var(--text2)" id="conteo"></span>'+
+      '<select id="filt" onchange="applyF()">'+
+        '<option value="">Todos los estados</option>'+
+        '<option value="pendiente">Pendiente</option>'+
+        '<option value="aprobado_bavaria">Aprobado Bavaria</option>'+
+        '<option value="aprobado_facturacion">Aprobado Facturacion</option>'+
+        '<option value="rechazado">Rechazado</option>'+
+        '<option value="en_ol">Con OL</option>'+
+        '<option value="cerrado">Cerrado</option>'+
+      '</select>'+
+    '</div>'+
+    '<div id="lista"></div>';
+
+  if(isVerif()){
+    setTimeout(function(){
+      function doFecha(p){
+        var hoy=new Date();
+        var h=hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0')+'-'+String(hoy.getDate()).padStart(2,'0');
+        var des=document.getElementById('fdDesde');
+        var has=document.getElementById('fdHasta');
+        if(!des||!has) return;
+        if(p==='hoy'){des.value=h;has.value=h;}
+        else if(p==='semana'){var lu=new Date(hoy);lu.setDate(hoy.getDate()-hoy.getDay()+1);des.value=lu.getFullYear()+'-'+String(lu.getMonth()+1).padStart(2,'0')+'-'+String(lu.getDate()).padStart(2,'0');has.value=h;}
+        else if(p==='mes'){des.value=hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0')+'-01';has.value=h;}
+        else{des.value='';has.value='';}
+        applyF();
+      }
+      document.querySelectorAll('.fdate-btn').forEach(function(b){
+        b.onclick=function(){
+          document.querySelectorAll('.fdate-btn').forEach(function(x){x.classList.remove('active');});
+          this.classList.add('active');
+          doFecha(this.getAttribute('data-p')||'todo');
+        };
+      });
+      var des=document.getElementById('fdDesde');
+      var has=document.getElementById('fdHasta');
+      if(des) des.onchange=applyF;
+      if(has) has.onchange=applyF;
+      // Default: Todos so all novedades show
+      var todBtn=document.getElementById('fdTodo');
+      if(todBtn){
+        document.querySelectorAll('.fdate-btn').forEach(function(x){x.classList.remove('active');});
+        todBtn.classList.add('active');
+        doFecha('todo');
+      }
+    },0);
+  }
+  applyF();
+}
+
+function setFecha(btn,periodo){
+  document.querySelectorAll('.fdate-btn').forEach(function(b){b.classList.remove('active');});
+  if(btn) btn.classList.add('active');
+  var hoy=new Date();
+  var desde=document.getElementById('fdDesde');
+  var hasta=document.getElementById('fdHasta');
+  if(!desde||!hasta) return;
+  var h=hoy.toISOString().split('T')[0];
+  if(periodo==='hoy'){
+    desde.value=h; hasta.value=h;
+  } else if(periodo==='semana'){
+    var lunes=new Date(hoy);
+    lunes.setDate(hoy.getDate()-hoy.getDay()+1);
+    desde.value=lunes.toISOString().split('T')[0];
+    hasta.value=h;
+  } else if(periodo==='mes'){
+    var primeroDia=new Date(hoy.getFullYear(),hoy.getMonth(),1);
+    desde.value=primeroDia.toISOString().split('T')[0];
+    hasta.value=h;
+  } else if(periodo==='todo'){
+    desde.value=''; hasta.value='';
+  }
+  applyF();
+}
+
+function applyF(){
+  var filt=document.getElementById('filt'); var val=filt?filt.value:'';
+  // Base list filtered by role
+  var base=novs;
+  if(isOL()){
+    // OL only sees aprobadas (pendientes de despachar) and en_ol and cerradas
+    base=novs.filter(function(n){return ['aprobado_bavaria','aprobado_facturacion','en_ol','cerrado'].includes(n.estado);});
+  }
+  var fil=val?base.filter(function(n){return n.estado===val;}):base;
+  // Facturacion only sees their motivos when filtering pendiente
+  if(isF()&&val==='pendiente'){
+    fil=fil.filter(function(n){return MOT_FACT.includes(getMot(n));});
+  }
+  // Bavaria only sees their motivos when filtering pendiente
+  if(isB()&&val==='pendiente'){
+    fil=fil.filter(function(n){return MOT_BAV.includes(getMot(n));});
+  }
+
+  // Filtro de fecha para Verificador
+  if(isVerif()){
+    var desde=document.getElementById('fdDesde');
+    var hasta=document.getElementById('fdHasta');
+    if(desde&&hasta&&desde.value){
+      var dDesde=desde.value;
+      var dHasta=hasta.value||desde.value;
+      fil=fil.filter(function(n){
+        var ts=n.creadoEn;
+        if(ts){
+          var d=new Date(ts);
+          var ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+          return ds>=dDesde&&ds<=dHasta;
+        }
+        return true;
+      });
+    }
+  }
+
+  var c=document.getElementById('lista');
+  var cont=document.getElementById('conteo');
+  if(cont) cont.textContent=fil.length+' novedad'+(fil.length!==1?'es':'');
+  if(c) c.innerHTML=fil.length?fil.map(card).join(''):'<div class="empty">Sin resultados para este per&iacute;odo</div>';
+}
+
+// ── MODAL ──────────────────────────────────────────────
+function abrirNov(id){
+  var n=novs.find(function(x){return x._id===id;}); if(!n)return;
+  currentNovId=id;
+  renderModal(n);
+  document.getElementById('modalOv').style.display='block';
+  document.getElementById('modalOv').scrollTop=0;
+}
+
+function closeModal(){
+  document.getElementById('modalOv').style.display='none';
+  currentNovId=null;
+  fotosModal=[];
+}
+
+document.getElementById('modalClose').onclick=function(){closeModal();};
+document.getElementById('modalOv').onclick=function(e){if(e.target===document.getElementById('modalOv'))closeModal();};
+
+// Handle foto clicks inside modal
+document.getElementById('modalBox').addEventListener('click',function(e){
+  var ft=e.target.closest('.foto-thumb');
+  if(!ft) return;
+  var nid=ft.getAttribute('data-nid');
+  var fi=parseInt(ft.getAttribute('data-fi')||'0');
+  var arrName=ft.getAttribute('data-arr')||'fotos';
+  // If no data-nid, use currentNovId
+  var id=nid||currentNovId;
+  var nov=novs.find(function(x){return x._id===id;});
+  if(nov&&nov[arrName]&&nov[arrName].length){
+    abrirViewer(nov[arrName],fi);
+  } else if(nov&&nov.fotos&&nov.fotos.length){
+    abrirViewer(nov.fotos,fi);
+  }
+});
+
+function renderModal(n){
+  var mo=getMot(n);
+  var aprobador=n.aprobador||getAprobador(mo);
+  var cambioTag=esCambio(n)?'<span class="tag-si">Si - Cambio y entrega</span>':'<span class="tag-no">No</span>';
+
+  // ── Permisos por rol y estado ──
+  var puedeBApro  = isB() && n.estado==='pendiente' && MOT_BAV.includes(mo);
+  var puedeFApro  = isF() && n.estado==='pendiente' && MOT_FACT.includes(mo);
+  var puedeDesp   = false; // Facturacion solo aprueba, OL hace el despacho
+  // OL: ve las despachadas para cambio y confirma entrega al Super Ruta
+  var puedeOL     = isOL() && (n.estado==='aprobado_bavaria'||n.estado==='aprobado_facturacion'||n.estado==='en_almacen');
+  // Ruta cierra: si es cambio, solo cuando OL ya entregó (en_ol). Si NO es cambio, cuando está en_almacen
+  var puedeCerrar = isR() && n.estado==='en_ol';
+  // Bavaria solo mira casos de Fact
+  var bavSoloVe   = isB() && n.estado==='pendiente' && MOT_FACT.includes(mo);
+  var soloVer     = isVerif();
+
+  var actHtml='';
+  if(puedeBApro||puedeFApro){
+    actHtml=
+      '<div class="hdiv"></div>'+
+      '<div style="font-size:15px;font-weight:700;margin-bottom:10px">Validaci&oacute;n</div>'+
+      '<div class="ibox">Al aprobar, el Supervisor OL recibir&aacute; la notificaci&oacute;n para entregar el producto al Supervisor de Ruta.</div>'+
+      '<div class="fg"><label>Comentario (obligatorio si rechaza)</label>'+
+        '<textarea id="mCom" placeholder="Escribe aqui..." style="width:100%;padding:10px;border:1px solid var(--border2);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;min-height:60px;resize:vertical"></textarea></div>'+
+      '<div class="brow">'+
+        '<button class="btn btn-s" id="mBtnApr"><i class="ti ti-check"></i> Aprobar</button>'+
+        '<button class="btn btn-d" id="mBtnRec"><i class="ti ti-x"></i> Rechazar</button>'+
+      '</div>';
+  } else if(puedeOL){
+    actHtml=
+      '<div class="hdiv"></div>'+
+      '<div style="font-size:15px;font-weight:700;margin-bottom:10px">Despacho OL &rarr; Supervisor de Ruta</div>'+
+      '<div class="gbox"><i class="ti ti-package"></i> Confirma que entregaste el producto al Supervisor de Ruta.</div>'+
+      '<div class="fg"><label>Placa Veh&iacute;culo</label><input id="mRem" type="text" placeholder="Ej: ABC123" autocapitalize="characters"></div>'+
+      '<div class="fg" style="margin-top:10px"><label>Nombre de quien recibe</label><input id="mOLnota" type="text" placeholder="Nombre del Supervisor de Ruta..."></div>'+
+      '<div class="fg" style="margin-top:10px"><label>Fotos de soporte (m&aacute;x. 3)</label>'+
+        '<div class="foto-zone" id="mFotoZoneOL"><i class="ti ti-camera"></i><p>Toca para agregar fotos</p></div>'+
+        '<input type="file" id="mFotoInputOL" accept="image/*" multiple style="display:none">'+
+        '<div class="foto-grid" id="mFotoGridOL"></div>'+
+      '</div>'+
+      '<div class="bcol"><button class="btn btn-t" id="mBtnOL"><i class="ti ti-transfer"></i> Confirmar entrega a Supervisor de Ruta</button></div>';
+  } else if(puedeCerrar){
+    var txtCerrar=esCambio(n)
+      ?'OL ya entregó el cambio. Confirma que lo entregaste al cliente para cerrar la novedad.'
+      :'Confirma que el producto fue entregado al cliente para cerrar la novedad.';
+    actHtml=
+      '<div class="hdiv"></div>'+
+      '<div style="font-size:15px;font-weight:700;margin-bottom:10px">Confirmar entrega al cliente</div>'+
+      '<div class="ibox">'+txtCerrar+'</div>'+
+      '<div class="fg"><label>Soporte de recibido del cliente</label><input id="mSop" type="text" placeholder="Firma, acta, radicado..."></div>'+
+      '<div class="fg" style="margin-top:10px"><label>Fotos de soporte (m&aacute;x. 3)</label>'+
+        '<div class="foto-zone" id="mFotoZoneRuta"><i class="ti ti-camera"></i><p>Toca para agregar fotos</p></div>'+
+        '<input type="file" id="mFotoInputRuta" accept="image/*" multiple style="display:none">'+
+        '<div class="foto-grid" id="mFotoGridRuta"></div>'+
+      '</div>'+
+      '<div class="bcol"><button class="btn btn-s" id="mBtnCerr"><i class="ti ti-circle-check"></i> Confirmar entrega y cerrar novedad</button></div>';
+  } else if(bavSoloVe){
+    actHtml='<div class="hdiv"></div><div class="wbox"><i class="ti ti-info-circle"></i> Este caso es de <strong>Faltante Carga / Trocado</strong> &mdash; lo aprueba <strong>Facturaci&oacute;n</strong>. Solo puedes visualizarlo.</div>';
+  } else if(soloVer){
+    actHtml='<div class="hdiv"></div><div class="wbox"><i class="ti ti-eye"></i> Modo Verificador &mdash; solo visualizaci&oacute;n.</div>';
+  }
+
+  var html=
+    '<div style="font-size:11px;font-family:monospace;color:var(--text3);margin-bottom:4px">'+(n.id||n._id)+'</div>'+
+    '<div style="font-size:20px;font-weight:700;margin-bottom:8px;padding-right:32px">'+n.cliente+'</div>'+
+    '<div style="margin-bottom:6px">'+pill(n.estado)+'</div>'+
+    '<div style="margin-bottom:14px">'+routeTag(mo)+'</div>'+
+    '<div class="stps">'+stpHtml(n)+'</div>'+
+    '<div class="fr"><span class="fk">N&deg; Transporte</span><span class="fv">'+(n.nTransporte||'-')+'</span></div>'+
+    '<div class="fr"><span class="fk">Placa</span><span class="fv">'+(n.placa||'-')+'</span></div>'+
+    '<div class="fr"><span class="fk">Responsable</span><span class="fv">'+(n.responsable||n.supervisorNombre||'-')+'</span></div>'+
+    '<div class="fr"><span class="fk">SKU</span><span class="fv">'+n.sku+'</span></div>'+
+    '<div class="fr"><span class="fk">Producto</span><span class="fv">'+(n.producto||'-')+'</span></div>'+
+    '<div class="fr"><span class="fk">Cantidad</span><span class="fv">'+n.cantidad+' und</span></div>'+
+    '<div class="fr"><span class="fk">Cliente</span><span class="fv">'+n.cliente+'</span></div>'+
+    '<div class="fr"><span class="fk">Motivo DQI</span><span class="fv">'+mo+'</span></div>'+
+    '<div class="fr"><span class="fk">Aprobador</span><span class="fv">'+(RL[aprobador]||'-')+'</span></div>'+
+    '<div class="fr"><span class="fk">Cambio y entrega</span><span class="fv">'+cambioTag+'</span></div>'+
+    '<div class="fr"><span class="fk">Reportado por</span><span class="fv">'+n.supervisorNombre+'</span></div>'+
+    '<div class="fr"><span class="fk">Fecha</span><span class="fv">'+n.fecha+'</span></div>'+
+    (n.obs?'<div class="fr"><span class="fk">Obs</span><span class="fv">'+n.obs+'</span></div>':'')+
+    (n.fotos&&n.fotos.length?
+      '<div class="hdiv"></div>'+
+      '<div style="font-size:14px;font-weight:700;margin-bottom:8px">Evidencias ('+n.fotos.length+')</div>'+
+      '<div class="ev-grid">'+
+        n.fotos.map(function(b64,fi){
+          return '<div class="foto-thumb" data-fi="'+fi+'" data-nid="'+n._id+'"><img src="'+b64+'"></div>';
+        }).join('')+
+      '</div>'
+    :'')+
+    (n.motivoRechazo?'<div class="fr"><span class="fk">Motivo rechazo</span><span class="fv" style="color:var(--red)">'+n.motivoRechazo+'</span></div>':'')+
+    (n.placaDespacho?'<div class="fr"><span class="fk">Placa despacho OL</span><span class="fv" style="color:var(--purple)">'+n.placaDespacho+'</span></div>':'')+
+    (n.personaRecibe?'<div class="fr"><span class="fk">Persona que recibe</span><span class="fv" style="color:var(--purple)">'+n.personaRecibe+'</span></div>':'')+
+    (n.notaOL?'<div class="fr"><span class="fk">Nota OL</span><span class="fv" style="color:var(--teal)">'+n.notaOL+'</span></div>':'')+
+    (n.fotosOL&&n.fotosOL.length?
+      '<div style="margin:8px 0 4px;font-size:12px;font-weight:700;color:var(--text2)">Fotos OL ('+n.fotosOL.length+')</div>'+
+      '<div class="ev-grid">'+n.fotosOL.map(function(b64,fi){return '<div class="foto-thumb" data-fi="'+fi+'" data-nid="'+n._id+'" data-arr="fotosOL"><img src="'+b64+'"></div>';}).join('')+'</div>'
+    :'')+
+    (n.soporteCliente?'<div class="fr"><span class="fk">Soporte cliente</span><span class="fv" style="color:var(--green)">'+n.soporteCliente+'</span></div>':'')+
+    (n.fotosEntrega&&n.fotosEntrega.length?
+      '<div style="margin:8px 0 4px;font-size:12px;font-weight:700;color:var(--text2)">Fotos entrega cliente ('+n.fotosEntrega.length+')</div>'+
+      '<div class="ev-grid">'+n.fotosEntrega.map(function(b64,fi){return '<div class="foto-thumb" data-fi="'+fi+'" data-nid="'+n._id+'" data-arr="fotosEntrega"><img src="'+b64+'"></div>';}).join('')+'</div>'
+    :'')+
+    '<div class="hdiv"></div>'+
+    '<div style="font-size:14px;font-weight:700;margin-bottom:12px">Trazabilidad</div>'+
+    (n.tl||[]).map(function(t){
+      return '<div class="tli"><div class="tld c'+(t.c&&t.c[0]?t.c[0]:'n')+'"></div>'+
+        '<div><div class="tla">'+t.a+'</div><div class="tlm">'+t.por+' &middot; '+t.ts+'</div>'+
+        (t.n?'<div class="tln">'+t.n+'</div>':'')+'</div></div>';
+    }).join('')+
+    actHtml;
+
+  document.getElementById('modalContent').innerHTML=html;
+
+  // Asignar eventos
+  if(puedeBApro||puedeFApro){
+    document.getElementById('mBtnApr').onclick=function(){validar(n._id,mo,'aprobado');};
+    document.getElementById('mBtnRec').onclick=function(){validar(n._id,mo,'rechazado');};
+  } else if(puedeOL){
+    document.getElementById('mBtnOL').onclick=function(){olEntregaRuta(n._id,n.supervisorUsername,n.cliente);};
+  } else if(puedeCerrar){
+    document.getElementById('mBtnCerr').onclick=function(){cerrar(n._id,n.cliente);};
+  }
+}
+
+// ── ACCIONES ───────────────────────────────────────────
+async function validar(fid,mot,dec){
+  var com=document.getElementById('mCom')?document.getElementById('mCom').value.trim():'';
+  if(dec==='rechazado'&&!com){alert('Escribe el motivo del rechazo.');return;}
+  var n=novs.find(function(x){return x._id===fid;}); if(!n)return;
+  var nuevoEst=dec==='rechazado'?'rechazado':getEstAprobado(mot);
+  var quien=RL[role];
+  var tl=(n.tl||[]).concat([{a:dec==='rechazado'?('Rechazado por '+quien):('Aprobado por '+quien),por:quien,ts:ts(),n:com,c:dec==='rechazado'?'rojo':'verde'}]);
+  var upd={estado:nuevoEst,tl:tl}; if(dec==='rechazado')upd.motivoRechazo=com;
+  try{
+    await window._upd(window._doc(window._db,'novedades',fid),upd);
+    if(dec==='rechazado'){
+      addN([n.supervisorUsername],'Novedad '+n.id+' rechazada por '+quien+': '+com,n.id);
+      enviarNotifPush('Novedad Rechazada', n.id+' - '+n.cliente+' | '+quien);
+    } else {
+      addN([n.supervisorUsername],'Novedad '+n.id+' ('+n.cliente+') aprobada por '+quien,n.id);
+      addN(['ol'],'Novedad '+n.id+' aprobada por '+quien+' - despacha el producto para '+n.cliente,n.id);
+      if(role==='facturacion') addN(['bavaria'],'Facturacion aprobo novedad '+n.id+' ('+getMot(n)+') - '+n.cliente,n.id);
+      enviarNotifPush('Novedad Aprobada', n.id+' - '+n.cliente+' | '+quien);
+    }
+    closeModal();
+  }catch(e){alert('Error: '+e.message);}
+}
+
+// despachar eliminado - OL es quien despacha
+
+async function olEntregaRuta(fid,supRole,cliente){
+  var rem=document.getElementById('mRem')?document.getElementById('mRem').value.trim():'';
+  var nota=document.getElementById('mOLnota')?document.getElementById('mOLnota').value.trim():'';
+  if(!rem){alert('Ingresa la placa del vehiculo.');return;}
+  var n=novs.find(function(x){return x._id===fid;}); if(!n)return;
+  var tl=(n.tl||[]).concat([{a:'OL entrego producto al Supervisor de Ruta',por:RL[role],ts:ts(),n:'Placa: '+rem+(nota?' | Recibe: '+nota:''),c:'teal'}]);
+  var upd={estado:'en_ol',placaDespacho:rem,personaRecibe:nota,tl:tl};
+  if(fotosModal.length) upd.fotosOL=fotosModal.slice();
+  try{
+    await window._upd(window._doc(window._db,'novedades',fid),upd);
+    addN([supRole],'OL despacho el producto para '+cliente+' (Rem: '+rem+'). Entregáselo al cliente y cierra la novedad.',n.id);
+    addN(['bavaria'],'OL despacho producto al Supervisor de Ruta - novedad '+n.id+' ('+cliente+')',n.id);
+    addN(['facturacion'],'OL despacho producto - novedad '+n.id+' ('+cliente+')',n.id);
+    closeModal();
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function cerrar(fid,cliente){
+  var sop=document.getElementById('mSop')?document.getElementById('mSop').value.trim():'';
+  if(!sop){alert('Ingresa el soporte de recibido del cliente.');return;}
+  var n=novs.find(function(x){return x._id===fid;}); if(!n)return;
+  var tl=(n.tl||[]).concat([{a:'Entregado al cliente y novedad cerrada',por:RL[role],ts:ts(),n:'Soporte: '+sop,c:'verde'}]);
+  var upd={estado:'cerrado',soporteCliente:sop,tl:tl};
+  if(fotosModal.length) upd.fotosEntrega=fotosModal.slice();
+  try{
+    await window._upd(window._doc(window._db,'novedades',fid),upd);
+    addN(['bavaria'],'Novedad '+n.id+' cerrada. Entregado a '+cliente+'.',n.id);
+    addN(['facturacion'],'Novedad '+n.id+' cerrada con soporte del cliente.',n.id);
+    if(esCambio(n)) addN(['ol'],'Novedad '+n.id+' cerrada. El cliente recibi\u00f3 el cambio.',n.id);
+    closeModal();
+  }catch(e){alert('Error: '+e.message);}
+}
+
+// ── FORMULARIO RUTA ────────────────────────────────────
+function formV(a){
+  motivoSel=null; cambioEntrega=null; fotos=[];
+  var mh=MOT_ALL.map(function(m,i){
+    var sub=MOT_BAV.includes(m)?'Aprueba: Supervisor Bavaria':'Aprueba: Facturacion';
+    return '<div class="mi" id="mi'+i+'">'+
+      '<input type="radio" name="motivo" id="mr'+i+'" value="'+m+'">'+
+      '<label for="mr'+i+'"><strong>'+m+'</strong><br><span style="font-size:11px;color:var(--text2)">'+sub+'</span></label>'+
+    '</div>';
+  }).join('');
+
+  a.innerHTML=
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">'+
+    '<button id="btnBackDashForm" style="background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 12px;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2)"><i class="ti ti-arrow-left"></i> Inicio</button>'+
+    '<div class="section-title" style="margin:0">Reportar novedad DQI</div>'+
+  '</div>'+
+    '<div class="fsec"><div class="fsec-t">Transporte</div>'+
+      '<div class="fg"><label>N&deg; Transporte <span class="req">*</span></label><input id="fT" type="text" placeholder="Ej: TRP-001234"></div>'+
+      '<div class="fg"><label>Placa Veh&iacute;culo <span class="req">*</span></label><input id="fP" type="text" placeholder="Ej: ABC123" autocapitalize="characters"></div>'+
+      '<div class="fg"><label>Responsable de Ruta <span class="req">*</span></label><input id="fR" type="text" placeholder="Nombre del responsable"></div>'+
+    '</div>'+
+    '<div class="fsec"><div class="fsec-t">Producto</div>'+
+      '<div class="fg"><label>SKU <span class="req">*</span></label>'+
+        '<input id="fS" type="text" placeholder="Codigo SKU" inputmode="numeric">'+
+        '<div class="sku-ok" id="sOk"><div class="sku-ok-n" id="sNom"></div><div class="sku-ok-f" id="sFam"></div></div>'+
+        '<div class="sku-err" id="sErr">SKU no encontrado</div></div>'+
+      '<div class="fg"><label>Producto (autom&aacute;tico)</label><input id="fPr" type="text" readonly placeholder="Se completa al ingresar el SKU"></div>'+
+      '<div class="fg"><label>Cantidad <span class="req">*</span></label><input id="fC" type="number" min="1" placeholder="Unidades afectadas" inputmode="numeric"></div>'+
+    '</div>'+
+    '<div class="fsec"><div class="fsec-t">Cliente</div>'+
+      '<div class="fg"><label>Cliente - Nombre o C&oacute;digo <span class="req">*</span></label><input id="fCl" type="text" placeholder="Nombre o codigo del cliente"></div>'+
+    '</div>'+
+    '<div class="fsec"><div class="fsec-t">Motivo DQI <span class="req">*</span></div>'+
+      '<div class="mg">'+mh+'</div>'+
+    '</div>'+
+    '<div class="fsec"><div class="fsec-t">&iquest;Es para cambio y entrega al cliente? <span class="req">*</span></div>'+
+      '<div class="toggle-row">'+
+        '<div class="toggle-opt" id="optSi">&#10003; S&iacute;</div>'+
+        '<div class="toggle-opt" id="optNo">&#10007; No</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="fsec"><div class="fsec-t">Evidencias fotogr&aacute;ficas (m&aacute;x. 3)</div>'+
+      '<div class="foto-zone" id="fotoZone"><i class="ti ti-camera"></i><p>Toca para agregar fotos</p><small>Se comprimen autom&aacute;ticamente para ahorrar espacio</small></div>'+
+      '<input type="file" id="fotoInput" accept="image/*" multiple style="display:none">'+
+      '<div class="foto-grid" id="fotoGrid"></div>'+
+    '</div>'+
+    '<div class="fsec"><div class="fsec-t">Observaciones</div>'+
+      '<textarea id="fO" placeholder="Detalle adicional (opcional)..."></textarea>'+
+    '</div>'+
+    '<div class="bcol" style="margin-bottom:24px">'+
+      '<button class="btn btn-p" id="bEnv"><i class="ti ti-send"></i> Enviar novedad</button>'+
+    '</div>';
+
+  MOT_ALL.forEach(function(m,i){
+    var item=document.getElementById('mi'+i), radio=document.getElementById('mr'+i);
+    item.onclick=function(){
+      motivoSel=m;
+      document.querySelectorAll('.mi').forEach(function(el){el.classList.remove('sel');});
+      item.classList.add('sel'); radio.checked=true;
+    };
+  });
+  document.getElementById('optSi').onclick=function(){
+    cambioEntrega='si';
+    document.getElementById('optSi').className='toggle-opt sel-si';
+    document.getElementById('optNo').className='toggle-opt';
+  };
+  document.getElementById('optNo').onclick=function(){
+    cambioEntrega='no';
+    document.getElementById('optNo').className='toggle-opt sel-no';
+    document.getElementById('optSi').className='toggle-opt';
+  };
+
+  document.getElementById('fS').oninput=function(e){skuL(e.target.value);};
+  document.getElementById('fotoZone').onclick=function(){document.getElementById('fotoInput').click();};
+  document.getElementById('fotoInput').onchange=function(e){agregarFotos(e.target.files);};
+  document.getElementById('bEnv').onclick=enviar;
+}
+
+function skuL(v){
+  v=v.trim();
+  var ok=document.getElementById('sOk'),err=document.getElementById('sErr'),pr=document.getElementById('fPr');
+  ok.style.display='none'; err.style.display='none'; pr.value='';
+  if(!v)return;
+  var f=SKUS[v];
+  if(f){document.getElementById('sNom').textContent=f.nombre;document.getElementById('sFam').textContent='Familia: '+f.familia;pr.value=f.nombre;ok.style.display='block';}
+  else if(v.length>=3){err.style.display='block';}
+}
+
+// Modal photo state
+var fotosModal=[];
+
+function wiredFotos(zoneId, inputId, gridId, arrName){
+  var arr = arrName==='fotosModal' ? fotosModal : fotos;
+  var zone=document.getElementById(zoneId);
+  var input=document.getElementById(inputId);
+  if(!zone||!input) return;
+  zone.onclick=function(){input.click();};
+  input.onchange=function(e){
+    var restantes=3-arr.length;
+    if(restantes<=0){alert('Máximo 3 fotos.');return;}
+    var files=Array.from(e.target.files).slice(0,restantes);
+    var done=0;
+    files.forEach(function(f){
+      comprimirImagen(f,function(b64){
+        arr.push(b64); done++;
+        if(done===files.length) renderFotosEn(gridId,zoneId,arr);
+      });
+    });
+    input.value='';
+  };
+}
+
+function renderFotosEn(gridId,zoneId,arr){
+  var grid=document.getElementById(gridId); if(!grid)return;
+  grid.innerHTML=arr.map(function(b64,i){
+    return '<div class="foto-item"><img src="'+b64+'"><button class="foto-del" data-i="'+i+'" data-grid="'+gridId+'" data-zone="'+zoneId+'"><i class="ti ti-x"></i></button></div>';
+  }).join('');
+  grid.querySelectorAll('.foto-del').forEach(function(btn){
+    btn.onclick=function(e){
+      e.stopPropagation();
+      var gi=this.getAttribute('data-grid');
+      var zi=this.getAttribute('data-zone');
+      // Determine which array
+      var a=(gi==='fotoGrid')?fotos:fotosModal;
+      a.splice(+this.getAttribute('data-i'),1);
+      renderFotosEn(gi,zi,a);
+    };
+  });
+  var zone=document.getElementById(zoneId);
+  if(zone){var p=zone.querySelector('p');if(p)p.textContent=arr.length+'/3 fotos'+(arr.length<3?' - Agregar más':'');}
+}
+
+// Compress image to base64
+function comprimirImagen(file, cb){
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      var MAX=800;
+      var w=img.width, h=img.height;
+      if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
+      if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}
+      var canvas=document.createElement('canvas');
+      canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      cb(canvas.toDataURL('image/jpeg',0.6));
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function agregarFotos(files){
+  var restantes=3-fotos.length;
+  if(restantes<=0){alert('Máximo 3 fotos por novedad.');return;}
+  var arr=Array.from(files).slice(0,restantes);
+  var procesadas=0;
+  arr.forEach(function(f){
+    comprimirImagen(f,function(b64){
+      fotos.push(b64);
+      procesadas++;
+      if(procesadas===arr.length) renderFotos();
+    });
+  });
+  document.getElementById('fotoInput').value='';
+}
+
+function renderFotos(){renderFotosEn('fotoGrid','fotoZone',fotos);}
+
+async function enviar(){
+  var t=document.getElementById('fT').value.trim(), p=document.getElementById('fP').value.trim().toUpperCase();
+  var r=document.getElementById('fR').value.trim(), s=document.getElementById('fS').value.trim();
+  var pr=document.getElementById('fPr').value.trim(), c=document.getElementById('fC').value.trim();
+  var cl=document.getElementById('fCl').value.trim(), ob=document.getElementById('fO').value.trim();
+  var err=[];
+  if(!t)err.push('N Transporte'); if(!p)err.push('Placa'); if(!r)err.push('Responsable');
+  if(!s||!pr)err.push('SKU valido'); if(!c)err.push('Cantidad'); if(!cl)err.push('Cliente');
+  if(!motivoSel)err.push('Motivo DQI'); if(!cambioEntrega)err.push('Cambio y entrega (Si o No)');
+  if(err.length){alert('Campos faltantes:\n\u2022 '+err.join('\n\u2022 '));return;}
+  var btn=document.getElementById('bEnv');
+  btn.disabled=true; btn.innerHTML='<i class="ti ti-loader-2"></i> Enviando...';
+  var sid=uid(), aprobador=getAprobador(motivoSel);
+  try{
+    await window._add(window._col(window._db,'novedades'),{
+      id:sid,nTransporte:t,placa:p,responsable:r,sku:s,producto:pr,cantidad:c,
+      cliente:cl,motivo:motivoSel,cambioEntrega:cambioEntrega,obs:ob,aprobador:aprobador,
+      fotos:fotos,
+      supervisorNombre:RL[role],supervisorUsername:role,
+      fecha:ts(),estado:'pendiente',creadoEn:Date.now(),
+      tl:[{a:'Novedad DQI reportada',por:(usuarioActual&&usuarioActual.nombre?usuarioActual.nombre:RL[role]),ts:ts(),
+           n:'Motivo: '+motivoSel+' | Aprueba: '+RL[aprobador]+' | '+(cambioEntrega==='si'?'Con cambio y entrega':'Sin cambio')+' | '+cl+' | SKU: '+s+' - '+pr+' | Cant: '+c,
+           c:'naranja'}]
+    });
+    var notifRoles=[aprobador];
+    if(aprobador==='facturacion') notifRoles.push('bavaria');
+    addN(notifRoles,'Nueva novedad de '+RL[role]+': '+cl+' | '+motivoSel+' | SKU '+s,sid);
+    enviarNotifPush('Nueva Novedad DQI registrada', sid+' | '+cl+' | '+motivoSel);
+    alert('Novedad enviada.\nReferencia: '+sid+'\nSer\u00e1 revisada por: '+RL[aprobador]);
+    motivoSel=null; cambioEntrega=null; fotos=[];
+    showV('dashboard');
+  }catch(e){
+    alert('Error: '+e.message);
+    btn.disabled=false; btn.innerHTML='<i class="ti ti-send"></i> Enviar novedad';
+  }
+}
+
+// ── NOTIF PANEL ────────────────────────────────────────
+function enviarNotifPush(titulo, cuerpo){
+  if(!('Notification' in window)||Notification.permission!=='granted') return;
+  var opts={
+    body:cuerpo,
+    icon:'https://exquisite-cucurucho-c0d811.netlify.app/icon.png',
+    badge:'https://exquisite-cucurucho-c0d811.netlify.app/icon.png',
+    tag:'dqi-'+Date.now(),
+    requireInteraction:false,
+    vibrate:[200,100,200]
+  };
+  try{
+    if('serviceWorker' in navigator&&navigator.serviceWorker.controller){
+      navigator.serviceWorker.ready.then(function(reg){
+        reg.showNotification(titulo,opts);
+      });
+    } else {
+      new Notification(titulo,opts);
+    }
+  }catch(e){
+    try{new Notification(titulo,opts);}catch(e2){}
+  }
+}
+
+function activarNotifs(){
+  if(!('Notification' in window)){alert('Tu navegador no soporta notificaciones.');return;}
+  Notification.requestPermission().then(function(p){
+    if(p==='granted'){
+      document.getElementById('notifPermBtn').style.display='none';
+      enviarNotifPush('Notificaciones activadas','Recibiras alertas de Bavaria DQI');
+    }
+  });
+}
+
+function checkNotifBtn(){
+  var btn=document.getElementById('notifPermBtn');
+  if(!btn)return;
+  btn.style.display=(!('Notification' in window)||Notification.permission==='granted')?'none':'flex';
+}
+
+function toggleNotif(){
+  var p=document.getElementById('notifPanel');
+  if(p.style.display==='none'||!p.style.display){
+    p.style.display='block';
+    var list=myN();
+    document.getElementById('notifList').innerHTML=list.length
+      ?list.map(function(n){return '<div class="notif-item"><div class="notif-msg">'+n.msg+'</div><div class="notif-ts">'+n.ts+'</div></div>';}).join('')
+      :'<div style="font-size:13px;color:var(--text2)">Sin notificaciones</div>';
+    myN().forEach(function(n){n.read=true;}); saveN();
+  }else p.style.display='none';
+}
+
+</script>
+
+<!-- FOTO VIEWER -->
+<div class="foto-viewer" id="fotoViewer">
+  <button class="foto-viewer-close" id="fotoViewerClose"><i class="ti ti-x"></i></button>
+  <img id="fotoViewerImg" src="" alt="">
+  <div class="foto-viewer-nav">
+    <button id="fotoViewerPrev"><i class="ti ti-arrow-left"></i> Anterior</button>
+    <span id="fotoViewerCount" style="color:#fff;font-size:13px;align-self:center"></span>
+    <button id="fotoViewerNext">Siguiente <i class="ti ti-arrow-right"></i></button>
+  </div>
+</div>
+
+<script>
+// Foto viewer logic
+var viewerFotos=[], viewerIdx=0;
+
+function abrirViewer(arr, idx){
+  viewerFotos=arr; viewerIdx=idx;
+  document.getElementById('fotoViewer').style.display='flex';
+  mostrarFoto();
+}
+
+function mostrarFoto(){
+  document.getElementById('fotoViewerImg').src=viewerFotos[viewerIdx];
+  document.getElementById('fotoViewerCount').textContent=(viewerIdx+1)+' / '+viewerFotos.length;
+  document.getElementById('fotoViewerPrev').style.display=viewerIdx>0?'block':'none';
+  document.getElementById('fotoViewerNext').style.display=viewerIdx<viewerFotos.length-1?'block':'none';
+}
+
+document.getElementById('fotoViewerClose').onclick=function(){
+  document.getElementById('fotoViewer').style.display='none';
+};
+document.getElementById('fotoViewerPrev').onclick=function(){
+  if(viewerIdx>0){viewerIdx--;mostrarFoto();}
+};
+document.getElementById('fotoViewerNext').onclick=function(){
+  if(viewerIdx<viewerFotos.length-1){viewerIdx++;mostrarFoto();}
+};
+document.getElementById('fotoViewer').onclick=function(e){
+  if(e.target===this) this.style.display='none';
+};
+</script>
+</body>
+</html>
