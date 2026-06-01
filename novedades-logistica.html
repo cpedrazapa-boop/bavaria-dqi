@@ -665,7 +665,8 @@ function dash(a){
           '<i class="ti ti-list-details"></i>'+
           '<span>Todos los casos</span>'+
         '</button>'+
-      '</div>';
+      '</div>'+
+      (isB()?'<div class="dash-actions" style="margin-top:-4px"><button class="dash-action-btn" id="dashBtnRep" style="border-color:var(--bav-gold);color:var(--bav-gold)"><i class="ti ti-chart-bar"></i><span>Dashboard Reportes</span></button></div>':'');
   } else {
     acciones=
       '<div class="dash-actions">'+
