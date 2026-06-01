@@ -4,18 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Bavaria - Novedades DQI</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#E30613">
-<script>
-if('serviceWorker' in navigator){
-  window.addEventListener('load',function(){
-    navigator.serviceWorker.register('sw.js').then(function(reg){
-      console.log('SW registrado:', reg.scope);
-    }).catch(function(e){console.log('SW error:',e);});
-  });
-}
-</script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -120,6 +111,39 @@ textarea{resize:vertical;min-height:72px}
 .stp.blocked{background:var(--red-bg);color:var(--red);border-color:#F7C1C1}
 .sarr{font-size:12px;color:var(--text3)}
 .empty{text-align:center;padding:48px 20px;color:var(--text2);font-size:14px}
+/* DASHBOARD REPORTES */
+.rdb-wrap{padding:0 0 32px}
+.rdb-period{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+.rdb-period-btn{padding:7px 16px;border:1.5px solid var(--border2);border-radius:20px;background:var(--surface);font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .15s}
+.rdb-period-btn.active{background:var(--bav-red);color:#fff;border-color:var(--bav-red)}
+.rdb-dates{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.rdb-dates label{font-size:12px;color:var(--text2);margin:0}
+.rdb-dates input{width:auto;padding:6px 10px;font-size:13px;border-radius:var(--radius-sm);border:1px solid var(--border2)}
+.kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;position:relative;overflow:hidden}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi-red::before{background:var(--bav-red)}
+.kpi-gold::before{background:var(--bav-gold)}
+.kpi-green::before{background:var(--green)}
+.kpi-blue::before{background:#185FA5}
+.kpi-icon{font-size:22px;margin-bottom:6px}
+.kpi-val{font-size:28px;font-weight:800;line-height:1;color:var(--text)}
+.kpi-lbl{font-size:11px;color:var(--text2);margin-top:4px;font-weight:500}
+.kpi-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.chart-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.chart-card-full{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:16px}
+.chart-title{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px}
+.rdb-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px}
+.rdb-table-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--border)}
+.rdb-table-title{font-size:13px;font-weight:700;color:var(--text)}
+.btn-export{display:flex;align-items:center;gap:6px;padding:7px 14px;background:var(--green);color:#fff;border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer}
+.rdb-table{width:100%;border-collapse:collapse;font-size:12px}
+.rdb-table th{background:var(--bg);color:var(--text2);font-weight:700;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;font-size:11px;text-transform:uppercase;letter-spacing:.3px}
+.rdb-table td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+.rdb-table tr:last-child td{border-bottom:none}
+.rdb-table tr:hover td{background:var(--bg)}
+.rdb-scroll{overflow-x:auto}
 .foto-viewer{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:999;display:none;align-items:center;justify-content:center;flex-direction:column}
 .foto-viewer img{max-width:100%;max-height:85vh;object-fit:contain;border-radius:8px}
 .foto-viewer-close{position:absolute;top:16px;right:16px;background:rgba(255,255,255,.2);border:none;color:#fff;width:40px;height:40px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
@@ -251,7 +275,6 @@ textarea{resize:vertical;min-height:72px}
     </div>
     <div style="display:flex;gap:2px;flex-shrink:0">
       <button class="icon-btn" onclick="toggleNotif()"><i class="ti ti-bell"></i></button>
-      <button class="icon-btn" id="notifPermBtn" onclick="activarNotifs()" title="Activar notificaciones push" style="display:none"><i class="ti ti-bell-off"></i></button>
       <button class="icon-btn" onclick="cambiarRol()"><i class="ti ti-switch"></i></button>
     </div>
   </div>
@@ -447,16 +470,6 @@ function selRole(r,nombreUsuario){
   buildNav();
   if(window._ready) startL();
   showV('dashboard');
-  setTimeout(function(){
-    if('Notification' in window){
-      if(Notification.permission==='default'){
-        Notification.requestPermission().then(function(p){
-          checkNotifBtn();
-          if(p==='granted') enviarNotifPush('Bienvenido a Bavaria DQI', (nombreUsuario||RL[r])+' - '+RL[r]);
-        });
-      } else { checkNotifBtn(); }
-    }
-  },1000);
 }
 
 function cambiarRol(){
@@ -477,6 +490,7 @@ function buildNav(){
   var nav=document.getElementById('bottomNav'); nav.innerHTML='';
   var tabs=[['dashboard','layout-dashboard','Resumen'],['novedades','list-details','Novedades']];
   if(isR()) tabs.push(['reportar','circle-plus','Reportar']);
+  if(isB()) tabs.push(['reportes','chart-bar','Reportes']);
   tabs.forEach(function(t,i){
     var b=document.createElement('button');
     b.className='nav-tab'+(i===0?' active':''); b.id='tab-'+t[0];
@@ -532,7 +546,9 @@ function startL(){
 
 function refr(v){
   var a=document.getElementById('contentArea');
-  if(v==='dashboard') dash(a); else if(v==='novedades') listV(a);
+  if(v==='dashboard') dash(a);
+  else if(v==='novedades') listV(a);
+  else if(v==='reportes') reportesV(a);
 }
 
 function showV(v){
@@ -1080,12 +1096,10 @@ async function validar(fid,mot,dec){
     await window._upd(window._doc(window._db,'novedades',fid),upd);
     if(dec==='rechazado'){
       addN([n.supervisorUsername],'Novedad '+n.id+' rechazada por '+quien+': '+com,n.id);
-      enviarNotifPush('Novedad Rechazada', n.id+' - '+n.cliente+' | '+quien);
     } else {
       addN([n.supervisorUsername],'Novedad '+n.id+' ('+n.cliente+') aprobada por '+quien,n.id);
       addN(['ol'],'Novedad '+n.id+' aprobada por '+quien+' - despacha el producto para '+n.cliente,n.id);
       if(role==='facturacion') addN(['bavaria'],'Facturacion aprobo novedad '+n.id+' ('+getMot(n)+') - '+n.cliente,n.id);
-      enviarNotifPush('Novedad Aprobada', n.id+' - '+n.cliente+' | '+quien);
     }
     closeModal();
   }catch(e){alert('Error: '+e.message);}
@@ -1322,7 +1336,6 @@ async function enviar(){
     var notifRoles=[aprobador];
     if(aprobador==='facturacion') notifRoles.push('bavaria');
     addN(notifRoles,'Nueva novedad de '+RL[role]+': '+cl+' | '+motivoSel+' | SKU '+s,sid);
-    enviarNotifPush('Nueva Novedad DQI registrada', sid+' | '+cl+' | '+motivoSel);
     alert('Novedad enviada.\nReferencia: '+sid+'\nSer\u00e1 revisada por: '+RL[aprobador]);
     motivoSel=null; cambioEntrega=null; fotos=[];
     showV('dashboard');
@@ -1333,43 +1346,226 @@ async function enviar(){
 }
 
 // ── NOTIF PANEL ────────────────────────────────────────
-function enviarNotifPush(titulo, cuerpo){
-  if(!('Notification' in window)||Notification.permission!=='granted') return;
-  var opts={
-    body:cuerpo,
-    icon:'https://exquisite-cucurucho-c0d811.netlify.app/icon.png',
-    badge:'https://exquisite-cucurucho-c0d811.netlify.app/icon.png',
-    tag:'dqi-'+Date.now(),
-    requireInteraction:false,
-    vibrate:[200,100,200]
-  };
-  try{
-    if('serviceWorker' in navigator&&navigator.serviceWorker.controller){
-      navigator.serviceWorker.ready.then(function(reg){
-        reg.showNotification(titulo,opts);
-      });
-    } else {
-      new Notification(titulo,opts);
-    }
-  }catch(e){
-    try{new Notification(titulo,opts);}catch(e2){}
-  }
+// ── REPORTES DASHBOARD ────────────────────────────────
+var rdbPeriodo='mes', rdbDesde='', rdbHasta='', chartMot=null, chartEst=null, chartDia=null;
+
+function reportesV(a){
+  a.innerHTML=
+    '<div class="rdb-wrap">'+
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">'+
+      '<div style="font-size:18px;font-weight:800;color:var(--bav-red)">Dashboard DQI</div>'+
+      '<div style="font-size:11px;color:var(--text2)">Solo visible para Bavaria</div>'+
+    '</div>'+
+    '<div class="rdb-period">'+
+      '<button class="rdb-period-btn" data-p="hoy">Hoy</button>'+
+      '<button class="rdb-period-btn" data-p="semana">Esta semana</button>'+
+      '<button class="rdb-period-btn active" data-p="mes">Este mes</button>'+
+      '<button class="rdb-period-btn" data-p="todo">Todos</button>'+
+    '</div>'+
+    '<div class="rdb-dates">'+
+      '<label>Desde:</label><input type="date" id="rdbD">'+
+      '<label>Hasta:</label><input type="date" id="rdbH">'+
+      '<button class="rdb-period-btn active" onclick="aplicarRango()" style="background:var(--bav-red);color:#fff;border-color:var(--bav-red)">Aplicar</button>'+
+    '</div>'+
+    '<div class="kpi-grid" id="rdbKpis"></div>'+
+    '<div class="chart-row">'+
+      '<div class="chart-card"><div class="chart-title">Por Motivo</div><canvas id="chartMot" height="180"></canvas></div>'+
+      '<div class="chart-card"><div class="chart-title">Por Estado</div><canvas id="chartEst" height="180"></canvas></div>'+
+    '</div>'+
+    '<div class="chart-card-full"><div class="chart-title">Novedades por dia</div><canvas id="chartDia" height="120"></canvas></div>'+
+    '<div class="rdb-table-wrap">'+
+      '<div class="rdb-table-head">'+
+        '<div class="rdb-table-title">Detalle de novedades</div>'+
+        '<button class="btn-export" onclick="exportarExcel()"><i class="ti ti-file-spreadsheet"></i> Exportar Excel</button>'+
+      '</div>'+
+      '<div class="rdb-scroll"><table class="rdb-table">'+
+        '<thead><tr>'+
+          '<th>ID</th><th>Fecha</th><th>Responsable</th><th>Placa</th><th>N° Transp</th>'+
+          '<th>Cliente</th><th>SKU</th><th>Producto</th><th>Cantidad</th>'+
+          '<th>Motivo</th><th>Cambio</th><th>Estado</th>'+
+        '</tr></thead>'+
+        '<tbody id="rdbTbody"></tbody>'+
+      '</table></div>'+
+    '</div>'+
+    '</div>';
+
+  // Wire period buttons
+  document.querySelectorAll('.rdb-period-btn[data-p]').forEach(function(b){
+    b.onclick=function(){
+      document.querySelectorAll('.rdb-period-btn[data-p]').forEach(function(x){x.classList.remove('active');});
+      this.classList.add('active');
+      rdbPeriodo=this.getAttribute('data-p');
+      rdbDesde=''; rdbHasta='';
+      document.getElementById('rdbD').value='';
+      document.getElementById('rdbH').value='';
+      renderReportes();
+    };
+  });
+
+  renderReportes();
 }
 
-function activarNotifs(){
-  if(!('Notification' in window)){alert('Tu navegador no soporta notificaciones.');return;}
-  Notification.requestPermission().then(function(p){
-    if(p==='granted'){
-      document.getElementById('notifPermBtn').style.display='none';
-      enviarNotifPush('Notificaciones activadas','Recibiras alertas de Bavaria DQI');
+function aplicarRango(){
+  rdbDesde=document.getElementById('rdbD').value;
+  rdbHasta=document.getElementById('rdbH').value;
+  if(rdbDesde) rdbPeriodo='custom';
+  document.querySelectorAll('.rdb-period-btn[data-p]').forEach(function(x){x.classList.remove('active');});
+  renderReportes();
+}
+
+function filtrarPorPeriodo(arr){
+  var hoy=new Date();
+  var h=hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0')+'-'+String(hoy.getDate()).padStart(2,'0');
+  var desde='', hasta=h;
+  if(rdbPeriodo==='custom'){desde=rdbDesde;hasta=rdbHasta||h;}
+  else if(rdbPeriodo==='hoy'){desde=h;hasta=h;}
+  else if(rdbPeriodo==='semana'){var lu=new Date(hoy);lu.setDate(hoy.getDate()-hoy.getDay()+1);desde=lu.getFullYear()+'-'+String(lu.getMonth()+1).padStart(2,'0')+'-'+String(lu.getDate()).padStart(2,'0');}
+  else if(rdbPeriodo==='mes'){desde=hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0')+'-01';}
+  else return arr;
+  return arr.filter(function(n){
+    if(!n.creadoEn) return true;
+    var d=new Date(n.creadoEn);
+    var ds=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    return ds>=desde && ds<=hasta;
+  });
+}
+
+function renderReportes(){
+  var data=filtrarPorPeriodo(novs);
+  var tot=data.length;
+  var pen=data.filter(function(n){return n.estado==='pendiente';}).length;
+  var cerr=data.filter(function(n){return n.estado==='cerrado';}).length;
+  var proc=data.filter(function(n){return ['aprobado_bavaria','aprobado_facturacion','en_almacen','en_ol'].includes(n.estado);}).length;
+  var rech=data.filter(function(n){return n.estado==='rechazado';}).length;
+  var cambio=data.filter(function(n){return n.cambioEntrega==='si';}).length;
+
+  // KPIs
+  var kpis=document.getElementById('rdbKpis');
+  if(kpis) kpis.innerHTML=
+    kpi('ti-clipboard-list','kpi-red',tot,'Total novedades','Periodo seleccionado')+
+    kpi('ti-clock','kpi-gold',pen,'Pendientes','Sin atender')+
+    kpi('ti-circle-check','kpi-green',cerr,'Cerradas',Math.round(tot?cerr/tot*100:0)+'% resolucion')+
+    kpi('ti-arrows-exchange','kpi-blue',cambio,'Cambio y entrega',Math.round(tot?cambio/tot*100:0)+'% del total');
+
+  // Chart motivos
+  var mots={};
+  data.forEach(function(n){var m=n.motivo||(n.motivos&&n.motivos[0])||'Sin motivo';mots[m]=(mots[m]||0)+1;});
+  renderChartMot(Object.keys(mots),Object.values(mots));
+
+  // Chart estados
+  var ests={'Pendiente':pen,'En proceso':proc,'Cerrado':cerr,'Rechazado':rech};
+  renderChartEst(Object.keys(ests),Object.values(ests));
+
+  // Chart por dia (ultimos 14 dias)
+  var dias={};
+  data.forEach(function(n){
+    if(!n.creadoEn) return;
+    var d=new Date(n.creadoEn);
+    var k=String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
+    dias[k]=(dias[k]||0)+1;
+  });
+  var sortedDias=Object.keys(dias).sort(function(a,b){
+    var ap=a.split('/'),bp=b.split('/');
+    return (ap[1]*100+parseInt(ap[0]))-(bp[1]*100+parseInt(bp[0]));
+  }).slice(-14);
+  renderChartDia(sortedDias,sortedDias.map(function(k){return dias[k];}));
+
+  // Table
+  var tbody=document.getElementById('rdbTbody');
+  if(tbody) tbody.innerHTML=data.map(function(n){
+    var est=n.estado||'-';
+    var color={pendiente:'var(--amber)',aprobado_bavaria:'var(--bav-red)',aprobado_facturacion:'var(--green)',en_almacen:'var(--purple)',en_ol:'var(--teal)',cerrado:'var(--gray-text)',rechazado:'var(--red)'}[est]||'var(--text2)';
+    return '<tr>'+
+      '<td style="font-family:monospace;font-size:11px">'+(n.id||n._id||'-')+'</td>'+
+      '<td style="white-space:nowrap">'+n.fecha+'</td>'+
+      '<td>'+(n.responsable||n.supervisorNombre||'-')+'</td>'+
+      '<td><strong>'+(n.placa||'-')+'</strong></td>'+
+      '<td>'+(n.nTransporte||'-')+'</td>'+
+      '<td><strong>'+n.cliente+'</strong></td>'+
+      '<td style="font-family:monospace">'+(n.sku||'-')+'</td>'+
+      '<td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(n.producto||'-')+'</td>'+
+      '<td style="text-align:center">'+(n.cantidad||'-')+'</td>'+
+      '<td><span style="background:var(--amber-bg);color:var(--amber);padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700">'+(n.motivo||(n.motivos&&n.motivos[0])||'-')+'</span></td>'+
+      '<td style="text-align:center">'+(n.cambioEntrega==='si'?'<span style="color:var(--green);font-weight:700">Si</span>':'No')+'</td>'+
+      '<td><span style="color:'+color+';font-weight:700;font-size:11px">'+(EST_LABEL[est]||est)+'</span></td>'+
+    '</tr>';
+  }).join('');
+}
+
+function kpi(icon, cls, val, lbl, sub){
+  return '<div class="kpi-card '+cls+'">'+
+    '<div class="kpi-icon"><i class="ti '+icon+'" style="color:inherit"></i></div>'+
+    '<div class="kpi-val">'+val+'</div>'+
+    '<div class="kpi-lbl">'+lbl+'</div>'+
+    '<div class="kpi-sub">'+sub+'</div>'+
+  '</div>';
+}
+
+function renderChartMot(labels, data){
+  var ctx=document.getElementById('chartMot');
+  if(!ctx) return;
+  if(chartMot) chartMot.destroy();
+  chartMot=new Chart(ctx,{
+    type:'doughnut',
+    data:{
+      labels:labels,
+      datasets:[{data:data,backgroundColor:['#E30613','#C8A84B','#3B6D11','#534AB7'],borderWidth:2,borderColor:'#fff'}]
+    },
+    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:10},padding:8}}}}
+  });
+}
+
+function renderChartEst(labels, data){
+  var ctx=document.getElementById('chartEst');
+  if(!ctx) return;
+  if(chartEst) chartEst.destroy();
+  chartEst=new Chart(ctx,{
+    type:'doughnut',
+    data:{
+      labels:labels,
+      datasets:[{data:data,backgroundColor:['#C8A84B','#185FA5','#3B6D11','#A32D2D'],borderWidth:2,borderColor:'#fff'}]
+    },
+    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:10},padding:8}}}}
+  });
+}
+
+function renderChartDia(labels, data){
+  var ctx=document.getElementById('chartDia');
+  if(!ctx) return;
+  if(chartDia) chartDia.destroy();
+  chartDia=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:labels,
+      datasets:[{label:'Novedades',data:data,backgroundColor:'#E30613',borderRadius:6,borderSkipped:false}]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false}},
+      scales:{
+        y:{beginAtZero:true,ticks:{stepSize:1,font:{size:10}},grid:{color:'#f0eded'}},
+        x:{ticks:{font:{size:10}},grid:{display:false}}
+      }
     }
   });
 }
 
-function checkNotifBtn(){
-  var btn=document.getElementById('notifPermBtn');
-  if(!btn)return;
-  btn.style.display=(!('Notification' in window)||Notification.permission==='granted')?'none':'flex';
+function exportarExcel(){
+  var data=filtrarPorPeriodo(novs);
+  var rows=[['ID','Fecha','Responsable','Placa','N Transporte','Cliente','SKU','Producto','Cantidad','Motivo','Cambio y Entrega','Estado','Observaciones']];
+  data.forEach(function(n){
+    rows.push([
+      n.id||n._id||'',n.fecha||'',n.responsable||n.supervisorNombre||'',n.placa||'',
+      n.nTransporte||'',n.cliente||'',n.sku||'',n.producto||'',n.cantidad||'',
+      n.motivo||(n.motivos&&n.motivos[0])||'',n.cambioEntrega==='si'?'Si':'No',
+      EST_LABEL[n.estado]||n.estado||'',n.obs||''
+    ]);
+  });
+  var wb=XLSX.utils.book_new();
+  var ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:12},{wch:18},{wch:18},{wch:10},{wch:14},{wch:20},{wch:8},{wch:25},{wch:9},{wch:18},{wch:12},{wch:18},{wch:30}];
+  XLSX.utils.book_append_sheet(wb,ws,'Novedades DQI');
+  XLSX.writeFile(wb,'Bavaria_DQI_'+new Date().toISOString().slice(0,10)+'.xlsx');
 }
 
 function toggleNotif(){
