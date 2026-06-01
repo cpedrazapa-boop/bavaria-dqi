@@ -1355,9 +1355,12 @@ var rdbPeriodo='mes', rdbDesde='', rdbHasta='', chartMot=null, chartEst=null, ch
 function reportesV(a){
   a.innerHTML=
     '<div class="rdb-wrap">'+
-    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">'+
-      '<div style="font-size:18px;font-weight:800;color:var(--bav-red)">Dashboard DQI</div>'+
-      '<div style="font-size:11px;color:var(--text2)">Solo visible para Bavaria</div>'+
+    '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">'+
+      '<button id="btnBackDash" style="background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 12px;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2);flex-shrink:0"><i class="ti ti-arrow-left"></i> Inicio</button>'+
+      '<div>'+
+        '<div style="font-size:18px;font-weight:800;color:var(--bav-red);line-height:1">Dashboard DQI</div>'+
+        '<div style="font-size:11px;color:var(--text2);margin-top:2px">Supervisor Bavaria</div>'+
+      '</div>'+
     '</div>'+
     '<div class="rdb-period">'+
       '<button class="rdb-period-btn" data-p="hoy">Hoy</button>'+
