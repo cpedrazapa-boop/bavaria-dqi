@@ -1378,6 +1378,7 @@ function reportesV(a){
       '<div class="chart-card"><div class="chart-title">Top SKUs afectados</div><canvas id="chartSku" height="200"></canvas></div>'+
       '<div class="chart-card"><div class="chart-title">Top Responsables</div><canvas id="chartResp" height="200"></canvas></div>'+
     '</div>'+
+    '<div class="chart-card-full"><div class="chart-title">Ranking de placas con más novedades</div><canvas id="chartPlaca" height="100"></canvas></div>'+
     '<div class="rdb-table-wrap">'+
       '<div class="rdb-table-head">'+
         '<div class="rdb-table-title">Detalle de novedades</div>'+
@@ -1486,6 +1487,42 @@ function renderReportes(){
   data.forEach(function(n){var r=n.responsable||n.supervisorNombre||'Sin nombre';resps[r]=(resps[r]||0)+1;});
   var topResps=Object.entries(resps).sort(function(a,b){return b[1]-a[1];}).slice(0,8);
   renderChartHBar('chartResp', topResps.map(function(x){return x[0];}), topResps.map(function(x){return x[1];}), '#C8A84B');
+
+  // Top Placas chart
+  var placas={};
+  data.forEach(function(n){if(n.placa){placas[n.placa]=(placas[n.placa]||0)+1;}});
+  var topPlacas=Object.entries(placas).sort(function(a,b){return b[1]-a[1];}).slice(0,12);
+  if(topPlacas.length){
+    var pColors=topPlacas.map(function(_,i){return i===0?'#E30613':i===1?'#C8A84B':i===2?'#534AB7':'#185FA5';});
+    var ctxP=document.getElementById('chartPlaca');
+    if(ctxP){
+      if(window.chart_chartPlaca) window.chart_chartPlaca.destroy();
+      window.chart_chartPlaca=new Chart(ctxP,{
+        type:'bar',
+        data:{
+          labels:topPlacas.map(function(x){return x[0];}),
+          datasets:[{
+            label:'Novedades',
+            data:topPlacas.map(function(x){return x[1];}),
+            backgroundColor:pColors,
+            borderRadius:6,
+            borderSkipped:false
+          }]
+        },
+        options:{
+          responsive:true,
+          plugins:{
+            legend:{display:false},
+            tooltip:{callbacks:{label:function(ctx){return ctx.parsed.y+' novedad'+(ctx.parsed.y!==1?'es':'');}}}
+          },
+          scales:{
+            y:{beginAtZero:true,ticks:{stepSize:1,font:{size:11}},grid:{color:'#f5f0f0'}},
+            x:{ticks:{font:{size:12},color:'#1a0808'},grid:{display:false}}
+          }
+        }
+      });
+    }
+  }
 
   // Table
   var tbody=document.getElementById('rdbTbody');
