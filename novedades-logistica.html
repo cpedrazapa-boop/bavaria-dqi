@@ -1374,6 +1374,10 @@ function reportesV(a){
       '<div class="chart-card"><div class="chart-title">Por Estado</div><canvas id="chartEst" height="180"></canvas></div>'+
     '</div>'+
     '<div class="chart-card-full"><div class="chart-title">Novedades por dia</div><canvas id="chartDia" height="120"></canvas></div>'+
+    '<div class="chart-row">'+
+      '<div class="chart-card"><div class="chart-title">Top SKUs afectados</div><canvas id="chartSku" height="200"></canvas></div>'+
+      '<div class="chart-card"><div class="chart-title">Top Responsables</div><canvas id="chartResp" height="200"></canvas></div>'+
+    '</div>'+
     '<div class="rdb-table-wrap">'+
       '<div class="rdb-table-head">'+
         '<div class="rdb-table-title">Detalle de novedades</div>'+
@@ -1471,6 +1475,18 @@ function renderReportes(){
   }).slice(-14);
   renderChartDia(sortedDias,sortedDias.map(function(k){return dias[k];}));
 
+  // Top SKUs chart
+  var skus={};
+  data.forEach(function(n){var s=(n.sku||'Sin SKU')+' - '+(n.producto||'').substring(0,15);skus[s]=(skus[s]||0)+1;});
+  var topSkus=Object.entries(skus).sort(function(a,b){return b[1]-a[1];}).slice(0,8);
+  renderChartHBar('chartSku', topSkus.map(function(x){return x[0];}), topSkus.map(function(x){return x[1];}), '#E30613');
+
+  // Top Responsables chart
+  var resps={};
+  data.forEach(function(n){var r=n.responsable||n.supervisorNombre||'Sin nombre';resps[r]=(resps[r]||0)+1;});
+  var topResps=Object.entries(resps).sort(function(a,b){return b[1]-a[1];}).slice(0,8);
+  renderChartHBar('chartResp', topResps.map(function(x){return x[0];}), topResps.map(function(x){return x[1];}), '#C8A84B');
+
   // Table
   var tbody=document.getElementById('rdbTbody');
   if(tbody) tbody.innerHTML=data.map(function(n){
@@ -1527,6 +1543,28 @@ function renderChartEst(labels, data){
       datasets:[{data:data,backgroundColor:['#C8A84B','#185FA5','#3B6D11','#A32D2D'],borderWidth:2,borderColor:'#fff'}]
     },
     options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:10},padding:8}}}}
+  });
+}
+
+function renderChartHBar(id, labels, data, color){
+  var ctx=document.getElementById(id);
+  if(!ctx) return;
+  if(window['chart_'+id]) window['chart_'+id].destroy();
+  window['chart_'+id]=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:labels,
+      datasets:[{data:data,backgroundColor:color+'CC',borderRadius:4,borderSkipped:false}]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{beginAtZero:true,ticks:{stepSize:1,font:{size:10}},grid:{color:'#f0eded'}},
+        y:{ticks:{font:{size:10}},grid:{display:false}}
+      }
+    }
   });
 }
 
