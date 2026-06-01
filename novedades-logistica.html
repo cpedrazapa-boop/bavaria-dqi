@@ -513,6 +513,8 @@ document.getElementById('contentArea').addEventListener('click', function(e){
     }
     return;
   }
+  var repBtn=e.target.closest('#dashBtnRep');
+  if(repBtn){reportesV(document.getElementById('contentArea'));return;}
   var bb=e.target.closest('#btnBackDash,#btnBackDashForm');
   if(bb){showV('dashboard');return;}
   var nc=e.target.closest('.nov-card[data-novid],.dash-nov-card[data-novid]');
