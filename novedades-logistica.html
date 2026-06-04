@@ -1032,9 +1032,13 @@ function renderModal(n){
     '<div class="fr"><span class="fk">N&deg; Transporte</span><span class="fv">'+(n.nTransporte||'-')+'</span></div>'+
     '<div class="fr"><span class="fk">Placa</span><span class="fv">'+(n.placa||'-')+'</span></div>'+
     '<div class="fr"><span class="fk">Responsable</span><span class="fv">'+(n.responsable||n.supervisorNombre||'-')+'</span></div>'+
-    '<div class="fr"><span class="fk">SKU</span><span class="fv">'+n.sku+'</span></div>'+
-    '<div class="fr"><span class="fk">Producto</span><span class="fv">'+(n.producto||'-')+'</span></div>'+
-    '<div class="fr"><span class="fk">Cantidad</span><span class="fv">'+n.cantidad+' und</span></div>'+
+    (n.skus&&n.skus.length>1?
+      n.skus.map(function(x,i){return '<div class="fr"><span class="fk">SKU '+(i+1)+'</span><span class="fv">'+x.sku+' - '+x.producto+' | '+x.cantidad+' und</span></div>';}).join('')
+    :
+      '<div class="fr"><span class="fk">SKU</span><span class="fv">'+n.sku+'</span></div>'+
+      '<div class="fr"><span class="fk">Producto</span><span class="fv">'+(n.producto||'-')+'</span></div>'+
+      '<div class="fr"><span class="fk">Cantidad</span><span class="fv">'+n.cantidad+' und</span></div>'
+    )+
     '<div class="fr"><span class="fk">Cliente</span><span class="fv">'+n.cliente+'</span></div>'+
     '<div class="fr"><span class="fk">Motivo DQI</span><span class="fv">'+mo+'</span></div>'+
     '<div class="fr"><span class="fk">Aprobador</span><span class="fv">'+(RL[aprobador]||'-')+'</span></div>'+
@@ -1144,6 +1148,38 @@ async function cerrar(fid,cliente){
 }
 
 // ── FORMULARIO RUTA ────────────────────────────────────
+var skuCount=1;
+
+function skuRowHtml(n){
+  return '<div class="sku-row" id="skuRow'+n+'" style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-bottom:8px;position:relative">'+
+    (n>1?'<button class="sku-del-btn" data-row="'+n+'" style="position:absolute;top:8px;right:8px;background:var(--red-bg);border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;color:var(--red);font-size:14px;display:flex;align-items:center;justify-content:center"><i class="ti ti-x"></i></button>':'')+
+    '<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;text-transform:uppercase">SKU '+n+'</div>'+
+    '<div class="fg"><label>Código SKU <span class="req">*</span></label>'+
+      '<input id="fS'+n+'" type="text" placeholder="Codigo SKU" inputmode="numeric">'+
+      '<div class="sku-ok" id="sOk'+n+'"><div class="sku-ok-n" id="sNom'+n+'"></div><div class="sku-ok-f" id="sFam'+n+'"></div></div>'+
+      '<div class="sku-err" id="sErr'+n+'">SKU no encontrado</div>'+
+    '</div>'+
+    '<div class="fg"><label>Producto</label><input id="fPr'+n+'" type="text" readonly placeholder="Automático"></div>'+
+    '<div class="fg" style="margin-bottom:0"><label>Cantidad <span class="req">*</span></label><input id="fC'+n+'" type="number" min="1" placeholder="Unidades" inputmode="numeric"></div>'+
+  '</div>';
+}
+
+function wireSku(n){
+  var inp=document.getElementById('fS'+n);
+  if(inp) inp.oninput=function(e){skuLN(e.target.value,n);};
+}
+
+function skuLN(v,n){
+  v=v.trim();
+  var ok=document.getElementById('sOk'+n),err=document.getElementById('sErr'+n),pr=document.getElementById('fPr'+n);
+  if(!ok||!err||!pr) return;
+  ok.style.display='none'; err.style.display='none'; pr.value='';
+  if(!v) return;
+  var f=SKUS[v];
+  if(f){document.getElementById('sNom'+n).textContent=f.nombre;document.getElementById('sFam'+n).textContent='Familia: '+f.familia;pr.value=f.nombre;ok.style.display='block';}
+  else if(v.length>=3){err.style.display='block';}
+}
+
 function formV(a){
   motivoSel=null; cambioEntrega=null; fotos=[];
   var mh=MOT_ALL.map(function(m,i){
@@ -1164,13 +1200,11 @@ function formV(a){
       '<div class="fg"><label>Placa Veh&iacute;culo <span class="req">*</span></label><input id="fP" type="text" placeholder="Ej: ABC123" autocapitalize="characters"></div>'+
       '<div class="fg"><label>Responsable de Ruta <span class="req">*</span></label><input id="fR" type="text" placeholder="Nombre del responsable"></div>'+
     '</div>'+
-    '<div class="fsec"><div class="fsec-t">Producto</div>'+
-      '<div class="fg"><label>SKU <span class="req">*</span></label>'+
-        '<input id="fS" type="text" placeholder="Codigo SKU" inputmode="numeric">'+
-        '<div class="sku-ok" id="sOk"><div class="sku-ok-n" id="sNom"></div><div class="sku-ok-f" id="sFam"></div></div>'+
-        '<div class="sku-err" id="sErr">SKU no encontrado</div></div>'+
-      '<div class="fg"><label>Producto (autom&aacute;tico)</label><input id="fPr" type="text" readonly placeholder="Se completa al ingresar el SKU"></div>'+
-      '<div class="fg"><label>Cantidad <span class="req">*</span></label><input id="fC" type="number" min="1" placeholder="Unidades afectadas" inputmode="numeric"></div>'+
+    '<div class="fsec"><div class="fsec-t">Productos (hasta 3 SKUs)</div>'+
+      '<div id="skuRows">'+
+        skuRowHtml(1)+
+      '</div>'+
+      '<button class="btn" id="btnAddSku" style="background:var(--bg);color:var(--text2);border:1.5px dashed var(--border2);margin-top:4px;padding:10px"><i class="ti ti-plus"></i> Agregar otro SKU</button>'+
     '</div>'+
     '<div class="fsec"><div class="fsec-t">Cliente</div>'+
       '<div class="fg"><label>Cliente - Nombre o C&oacute;digo <span class="req">*</span></label><input id="fCl" type="text" placeholder="Nombre o codigo del cliente"></div>'+
@@ -1215,21 +1249,31 @@ function formV(a){
     document.getElementById('optSi').className='toggle-opt';
   };
 
-  document.getElementById('fS').oninput=function(e){skuL(e.target.value);};
+  skuCount=1;
+  wireSku(1);
+  document.getElementById('btnAddSku').onclick=function(){
+    if(skuCount>=3){alert('Máximo 3 SKUs por novedad.');return;}
+    skuCount++;
+    document.getElementById('skuRows').insertAdjacentHTML('beforeend',skuRowHtml(skuCount));
+    wireSku(skuCount);
+    if(skuCount>=3) document.getElementById('btnAddSku').style.display='none';
+    // Wire delete buttons
+    document.querySelectorAll('.sku-del-btn').forEach(function(btn){
+      btn.onclick=function(){
+        var row=this.getAttribute('data-row');
+        var el=document.getElementById('skuRow'+row);
+        if(el) el.remove();
+        skuCount--;
+        document.getElementById('btnAddSku').style.display='flex';
+      };
+    });
+  };
   document.getElementById('fotoZone').onclick=function(){document.getElementById('fotoInput').click();};
   document.getElementById('fotoInput').onchange=function(e){agregarFotos(e.target.files);};
   document.getElementById('bEnv').onclick=enviar;
 }
 
-function skuL(v){
-  v=v.trim();
-  var ok=document.getElementById('sOk'),err=document.getElementById('sErr'),pr=document.getElementById('fPr');
-  ok.style.display='none'; err.style.display='none'; pr.value='';
-  if(!v)return;
-  var f=SKUS[v];
-  if(f){document.getElementById('sNom').textContent=f.nombre;document.getElementById('sFam').textContent='Familia: '+f.familia;pr.value=f.nombre;ok.style.display='block';}
-  else if(v.length>=3){err.style.display='block';}
-}
+// skuL replaced by skuLN
 
 // Modal photo state
 var fotosModal=[];
@@ -1327,13 +1371,15 @@ async function enviar(){
   var sid=uid(), aprobador=getAprobador(motivoSel);
   try{
     await window._add(window._col(window._db,'novedades'),{
-      id:sid,nTransporte:t,placa:p,responsable:r,sku:s,producto:pr,cantidad:c,
+      id:sid,nTransporte:t,placa:p,responsable:r,
+      sku:s,producto:pr,cantidad:c,
+      skus:skuItems,
       cliente:cl,motivo:motivoSel,cambioEntrega:cambioEntrega,obs:ob,aprobador:aprobador,
       fotos:fotos,
       supervisorNombre:RL[role],supervisorUsername:role,
       fecha:ts(),estado:'pendiente',creadoEn:Date.now(),
       tl:[{a:'Novedad DQI reportada',por:(usuarioActual&&usuarioActual.nombre?usuarioActual.nombre:RL[role]),ts:ts(),
-           n:'Motivo: '+motivoSel+' | Aprueba: '+RL[aprobador]+' | '+(cambioEntrega==='si'?'Con cambio y entrega':'Sin cambio')+' | '+cl+' | SKU: '+s+' - '+pr+' | Cant: '+c,
+           n:'Motivo: '+motivoSel+' | Aprueba: '+RL[aprobador]+' | '+(cambioEntrega==='si'?'Con cambio y entrega':'Sin cambio')+' | '+cl+' | '+skuItems.map(function(x){return 'SKU:'+x.sku+' x'+x.cantidad;}).join(', '),
            c:'naranja'}]
     });
     var notifRoles=[aprobador];
