@@ -1151,16 +1151,18 @@ async function cerrar(fid,cliente){
 var skuCount=1;
 
 function skuRowHtml(n){
-  return '<div class="sku-row" id="skuRow'+n+'" style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-bottom:8px;position:relative">'+
+  var req=n===1?'<span class="req">*</span>':'';
+  var opt=n>1?' <span style="font-size:10px;color:var(--text3);font-weight:400">(opcional)</span>':'';
+  return '<div class="sku-row" id="skuRow'+n+'" style="border:1px solid '+(n===1?'var(--border)':'var(--border)')+';border-radius:var(--radius-sm);padding:12px;margin-bottom:8px;position:relative">'+
     (n>1?'<button class="sku-del-btn" data-row="'+n+'" style="position:absolute;top:8px;right:8px;background:var(--red-bg);border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;color:var(--red);font-size:14px;display:flex;align-items:center;justify-content:center"><i class="ti ti-x"></i></button>':'')+
-    '<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;text-transform:uppercase">SKU '+n+'</div>'+
-    '<div class="fg"><label>Código SKU <span class="req">*</span></label>'+
+    '<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;text-transform:uppercase">SKU '+n+opt+'</div>'+
+    '<div class="fg"><label>Código SKU '+req+'</label>'+
       '<input id="fS'+n+'" type="text" placeholder="Codigo SKU" inputmode="numeric">'+
       '<div class="sku-ok" id="sOk'+n+'"><div class="sku-ok-n" id="sNom'+n+'"></div><div class="sku-ok-f" id="sFam'+n+'"></div></div>'+
       '<div class="sku-err" id="sErr'+n+'">SKU no encontrado</div>'+
     '</div>'+
     '<div class="fg"><label>Producto</label><input id="fPr'+n+'" type="text" readonly placeholder="Automático"></div>'+
-    '<div class="fg" style="margin-bottom:0"><label>Cantidad <span class="req">*</span></label><input id="fC'+n+'" type="number" min="1" placeholder="Unidades" inputmode="numeric"></div>'+
+    '<div class="fg" style="margin-bottom:0"><label>Cantidad '+req+'</label><input id="fC'+n+'" type="number" min="1" placeholder="Unidades" inputmode="numeric"></div>'+
   '</div>';
 }
 
