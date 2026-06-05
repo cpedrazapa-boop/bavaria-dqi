@@ -1359,17 +1359,39 @@ function agregarFotos(files){
 function renderFotos(){renderFotosEn('fotoGrid','fotoZone',fotos);}
 
 async function enviar(){
-  var t=document.getElementById('fT').value.trim(), p=document.getElementById('fP').value.trim().toUpperCase();
+  var t=document.getElementById('fT')?document.getElementById('fT').value.trim():'';
+  var p=document.getElementById('fP')?document.getElementById('fP').value.trim().toUpperCase():'';
   var r=document.getElementById('fR')?document.getElementById('fR').value.trim():'';
   var cl=document.getElementById('fCl')?document.getElementById('fCl').value.trim():'';
   var ob=document.getElementById('fO')?document.getElementById('fO').value.trim():'';
-  // SKU fields now handled by skuItems array below
-  var s='', pr='', c='';
+
+  // Collect SKUs - only include rows that have SKU + producto + cantidad
+  var skuItems=[];
+  for(var si=1;si<=3;si++){
+    var rowEl=document.getElementById('skuRow'+si);
+    if(!rowEl) continue;
+    var sv=document.getElementById('fS'+si)?document.getElementById('fS'+si).value.trim():'';
+    var pv=document.getElementById('fPr'+si)?document.getElementById('fPr'+si).value.trim():'';
+    var cv=document.getElementById('fC'+si)?document.getElementById('fC'+si).value.trim():'';
+    if(sv&&pv&&cv) skuItems.push({sku:sv,producto:pv,cantidad:cv});
+  }
+
+  // First SKU for backward compatibility
+  var s=skuItems.length?skuItems[0].sku:'';
+  var pr=skuItems.length?skuItems[0].producto:'';
+  var c=skuItems.length?skuItems[0].cantidad:'';
+
   var err=[];
-  if(!t)err.push('N Transporte'); if(!p)err.push('Placa'); if(!r)err.push('Responsable');
-  if(!s||!pr)err.push('SKU valido'); if(!c)err.push('Cantidad'); if(!cl)err.push('Cliente');
-  if(!motivoSel)err.push('Motivo DQI'); if(!cambioEntrega)err.push('Cambio y entrega (Si o No)');
-  if(err.length){alert('Campos faltantes:\n\u2022 '+err.join('\n\u2022 '));return;}
+  if(!t) err.push('N° Transporte');
+  if(!p) err.push('Placa Vehículo');
+  if(!r) err.push('Responsable de Ruta');
+  if(!skuItems.length) err.push('SKU 1 (obligatorio) - ingresa código y cantidad');
+  if(!cl) err.push('Cliente');
+  if(!motivoSel) err.push('Motivo DQI');
+  if(!cambioEntrega) err.push('¿Es para cambio y entrega? (Si o No)');
+  if(err.length){alert('Campos faltantes:
+• '+err.join('
+• '));return;}
   var btn=document.getElementById('bEnv');
   btn.disabled=true; btn.innerHTML='<i class="ti ti-loader-2"></i> Enviando...';
   var sid=uid(), aprobador=getAprobador(motivoSel);
