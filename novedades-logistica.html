@@ -1358,9 +1358,11 @@ function renderFotos(){renderFotosEn('fotoGrid','fotoZone',fotos);}
 
 async function enviar(){
   var t=document.getElementById('fT').value.trim(), p=document.getElementById('fP').value.trim().toUpperCase();
-  var r=document.getElementById('fR').value.trim(), s=document.getElementById('fS').value.trim();
-  var pr=document.getElementById('fPr').value.trim(), c=document.getElementById('fC').value.trim();
-  var cl=document.getElementById('fCl').value.trim(), ob=document.getElementById('fO').value.trim();
+  var r=document.getElementById('fR')?document.getElementById('fR').value.trim():'';
+  var cl=document.getElementById('fCl')?document.getElementById('fCl').value.trim():'';
+  var ob=document.getElementById('fO')?document.getElementById('fO').value.trim():'';
+  // SKU fields now handled by skuItems array below
+  var s='', pr='', c='';
   var err=[];
   if(!t)err.push('N Transporte'); if(!p)err.push('Placa'); if(!r)err.push('Responsable');
   if(!s||!pr)err.push('SKU valido'); if(!c)err.push('Cantidad'); if(!cl)err.push('Cliente');
