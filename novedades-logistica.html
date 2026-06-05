@@ -1389,9 +1389,7 @@ async function enviar(){
   if(!cl) err.push('Cliente');
   if(!motivoSel) err.push('Motivo DQI');
   if(!cambioEntrega) err.push('¿Es para cambio y entrega? (Si o No)');
-  if(err.length){alert('Campos faltantes:
-• '+err.join('
-• '));return;}
+  if(err.length){alert('Campos faltantes:\n- '+err.join('\n- '));return;}
   var btn=document.getElementById('bEnv');
   btn.disabled=true; btn.innerHTML='<i class="ti ti-loader-2"></i> Enviando...';
   var sid=uid(), aprobador=getAprobador(motivoSel);
