@@ -867,7 +867,7 @@ function filtrarYver(estado){
 // ── LISTA ──────────────────────────────────────────────
 function listV(a){
   var extraFechas = '';
-  if(isVerif()){
+  {
     var bf=document.createElement('div');
     bf.style.cssText='display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px';
     var row1=document.createElement('div');
@@ -908,7 +908,7 @@ function listV(a){
     '</div>'+
     '<div id="lista"></div>';
 
-  if(isVerif()){
+  {
     setTimeout(function(){
       function doFecha(p){
         var hoy=new Date();
@@ -1010,8 +1010,8 @@ function applyF(){
     fil=fil.filter(function(n){return MOT_BAV.includes(getMot(n));});
   }
 
-  // Filtro de fecha para Verificador
-  if(isVerif()){
+  // Filtro de fecha (todos los roles)
+  {
     var desde=document.getElementById('fdDesde');
     var hasta=document.getElementById('fdHasta');
     if(desde&&hasta&&desde.value){
