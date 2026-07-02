@@ -296,10 +296,10 @@ textarea{resize:vertical;min-height:72px}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, getDocs, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, getDocs, onSnapshot, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 const app=initializeApp({apiKey:"AIzaSyDl964QjV7hYBg3RGWjQ1pr89aHRNuFJas",authDomain:"novedades-logistica-7c974.firebaseapp.com",projectId:"novedades-logistica-7c974",storageBucket:"novedades-logistica-7c974.firebasestorage.app",messagingSenderId:"257554370494",appId:"1:257554370494:web:17529ce174ee758b3b33ef"});
 const db=getFirestore(app);
-window._db=db;window._col=collection;window._add=addDoc;window._doc=doc;window._upd=updateDoc;window._del=deleteDoc;window._getDocs=getDocs;window._snap=onSnapshot;window._q=query;window._ord=orderBy;window._lim=limit;
+window._db=db;window._col=collection;window._add=addDoc;window._doc=doc;window._upd=updateDoc;window._del=deleteDoc;window._getDocs=getDocs;window._snap=onSnapshot;window._q=query;window._ord=orderBy;window._lim=limit;window._where=where;
 window._ready=true;window.dispatchEvent(new Event('firebaseReady'));
 </script>
 <script>
@@ -521,13 +521,26 @@ document.getElementById('contentArea').addEventListener('click', function(e){
   if(dfBtn){
     document.querySelectorAll('#dashFHoy,#dashFSem,#dashFMes,#dashFTodo').forEach(function(b){b.classList.remove('active');});
     dfBtn.classList.add('active');
-    var all=window._allNovs||novs;
     var hoy2=new Date(); hoy2.setHours(0,0,0,0); var hoyT=hoy2.getTime();
-    if(dfBtn.id==='dashFHoy'){novs=all.filter(function(n){return !n.creadoEn||n.creadoEn>=hoyT;});}
-    else if(dfBtn.id==='dashFSem'){var lu=new Date(hoy2);lu.setDate(hoy2.getDate()-hoy2.getDay()+1);novs=all.filter(function(n){return !n.creadoEn||n.creadoEn>=lu.getTime();});}
-    else if(dfBtn.id==='dashFMes'){var pm=new Date(hoy2.getFullYear(),hoy2.getMonth(),1);novs=all.filter(function(n){return !n.creadoEn||n.creadoEn>=pm.getTime();});}
-    else{novs=all;}
-    refr('dashboard');
+    if(dfBtn.id==='dashFHoy'){
+      // Today - use cached
+      novs=(window._allNovs||novs).filter(function(n){return !n.creadoEn||n.creadoEn>=hoyT;});
+      refr('dashboard');
+    } else if(dfBtn.id==='dashFSem'){
+      // This week - load from server
+      mostrarToast('Cargando semana...');
+      var lu=new Date(hoy2); lu.setDate(hoy2.getDate()-hoy2.getDay()+1);
+      cargarRango(lu.getTime(), function(){ refr('dashboard'); mostrarToast(novs.length+' registros de la semana'); });
+    } else if(dfBtn.id==='dashFMes'){
+      // This month - load from server
+      mostrarToast('Cargando mes...');
+      var pm=new Date(hoy2.getFullYear(),hoy2.getMonth(),1);
+      cargarRango(pm.getTime(), function(){ refr('dashboard'); mostrarToast(novs.length+' registros del mes'); });
+    } else {
+      // ALL - load from server with spinner
+      mostrarToast('Cargando historial completo...');
+      cargarRango(0, function(){ refr('dashboard'); mostrarToast('Total: '+novs.length+' registros'); });
+    }
     return;
   }
   var bb=e.target.closest('#btnBackDash,#btnBackDashForm');
@@ -569,16 +582,17 @@ function startL(){
     setTimeout(function(){var b=document.getElementById('loadBar');if(b)b.style.width='75%';},1500);
   }
 
-  // Load only TODAY's records first for fast initial render
-  var hoy=new Date();
-  hoy.setHours(0,0,0,0);
-  var hoyTs=hoy.getTime();
-  var q50=window._q(window._col(window._db,'novedades'),window._ord('creadoEn','desc'),window._lim(100));
+  // SERVER-SIDE filter: only load today's records from Firebase
+  var hoyDate=new Date();
+  hoyDate.setHours(0,0,0,0);
+  var hoyTs=hoyDate.getTime();
+  var q50=window._q(
+    window._col(window._db,'novedades'),
+    window._where('creadoEn','>=',hoyTs),
+    window._ord('creadoEn','desc')
+  );
   var unsubFast=window._snap(q50,function(snap){
-    // Filter to show only today's records initially
-    var todayStart=new Date(); todayStart.setHours(0,0,0,0);
-    var todayTs=todayStart.getTime();
-    novs=snap.docs.map(function(d){var data=d.data();var light=Object.assign({},data,{_id:d.id});delete light.fotos;delete light.fotosOL;delete light.fotosEntrega;light._hasFotos=!!(data.fotos&&data.fotos.length||data.fotosOL&&data.fotosOL.length||data.fotosEntrega&&data.fotosEntrega.length);light._fotosLoaded=false;return light;}).filter(function(n){return !n.creadoEn||n.creadoEn>=todayTs;});
+    novs=snap.docs.map(function(d){var data=d.data();var light=Object.assign({},data,{_id:d.id});delete light.fotos;delete light.fotosOL;delete light.fotosEntrega;light._hasFotos=!!(data.fotos&&data.fotos.length||data.fotosOL&&data.fotosOL.length||data.fotosEntrega&&data.fotosEntrega.length);light._fotosLoaded=false;return light;});
     // Update progress bar
     var b=document.getElementById('loadBar'); if(b) b.style.width='85%';
     var m=document.getElementById('loadMsg'); if(m) m.textContent='Cargando vista inicial...';
@@ -594,13 +608,13 @@ function startL(){
       unsub=window._snap(qAll,function(snapAll){
         var prev=novs.length;
         var allNovs=snapAll.docs.map(function(d){var data=d.data();var light=Object.assign({},data,{_id:d.id});delete light.fotos;delete light.fotosOL;delete light.fotosEntrega;light._hasFotos=!!(data.fotos&&data.fotos.length||data.fotosOL&&data.fotosOL.length||data.fotosEntrega&&data.fotosEntrega.length);light._fotosLoaded=false;return light;});
-        // Default view: today only, but keep all in memory
+        // Default view: today only from 7-day cache
         var todayStart2=new Date(); todayStart2.setHours(0,0,0,0);
         novs=allNovs.filter(function(n){return !n.creadoEn||n.creadoEn>=todayStart2.getTime();});
-        window._allNovs=allNovs; // Keep all records for filtering
+        window._allNovs=allNovs;
         // Show toast if more records loaded
         if(novs.length>prev){
-          mostrarToast(novs.length+' registros cargados');
+          mostrarToast('Semana cargada: '+novs.length+' registros');
         }
         var cur2=document.querySelector('.nav-tab.active');
         if(cur2){var v2=cur2.id.replace('tab-',''); if(v2!=='reportar') refr(v2);}
@@ -1807,6 +1821,29 @@ function exportarExcel(){
   ws['!cols']=[{wch:12},{wch:18},{wch:18},{wch:10},{wch:14},{wch:20},{wch:8},{wch:25},{wch:9},{wch:18},{wch:12},{wch:18},{wch:30}];
   XLSX.utils.book_append_sheet(wb,ws,'Novedades DQI');
   XLSX.writeFile(wb,'Bavaria_DQI_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+
+function cargarRango(desdeTs, cb){
+  var q;
+  if(desdeTs>0){
+    q=window._q(window._col(window._db,'novedades'),window._where('creadoEn','>=',desdeTs),window._ord('creadoEn','desc'));
+  } else {
+    q=window._q(window._col(window._db,'novedades'),window._ord('creadoEn','desc'));
+  }
+  window._getDocs(q).then(function(snap){
+    novs=snap.docs.map(function(d){
+      var data=d.data();
+      var light=Object.assign({},data,{_id:d.id});
+      delete light.fotos; delete light.fotosOL; delete light.fotosEntrega;
+      light._hasFotos=!!(data.fotos&&data.fotos.length||data.fotosOL&&data.fotosOL.length||data.fotosEntrega&&data.fotosEntrega.length);
+      light._fotosLoaded=false;
+      return light;
+    });
+    window._allNovs=novs;
+    if(cb) cb();
+  }).catch(function(e){
+    mostrarToast('Error al cargar: '+e.message);
+  });
 }
 
 function mostrarToast(msg){
