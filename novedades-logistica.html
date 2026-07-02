@@ -916,11 +916,28 @@ function listV(a){
         var des=document.getElementById('fdDesde');
         var has=document.getElementById('fdHasta');
         if(!des||!has) return;
-        if(p==='hoy'){des.value=h;has.value=h;}
-        else if(p==='semana'){var lu=new Date(hoy);lu.setDate(hoy.getDate()-hoy.getDay()+1);des.value=lu.getFullYear()+'-'+String(lu.getMonth()+1).padStart(2,'0')+'-'+String(lu.getDate()).padStart(2,'0');has.value=h;}
-        else if(p==='mes'){des.value=hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0')+'-01';has.value=h;}
-        else{des.value='';has.value='';}
-        applyF();
+        var hoy2=new Date(); hoy2.setHours(0,0,0,0);
+        if(p==='hoy'){
+          des.value=h;has.value=h;
+          applyF();
+        } else if(p==='semana'){
+          var lu=new Date(hoy);lu.setDate(hoy.getDate()-hoy.getDay()+1);
+          des.value=lu.getFullYear()+'-'+String(lu.getMonth()+1).padStart(2,'0')+'-'+String(lu.getDate()).padStart(2,'0');
+          has.value=h;
+          mostrarToast('Cargando semana...');
+          var luTs=new Date(hoy2); luTs.setDate(hoy2.getDate()-hoy2.getDay()+1);
+          cargarRango(luTs.getTime(), applyF);
+        } else if(p==='mes'){
+          des.value=hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0')+'-01';
+          has.value=h;
+          mostrarToast('Cargando mes...');
+          var pmTs=new Date(hoy2.getFullYear(),hoy2.getMonth(),1);
+          cargarRango(pmTs.getTime(), applyF);
+        } else {
+          des.value='';has.value='';
+          mostrarToast('Cargando historial completo...');
+          cargarRango(0, applyF);
+        }
       }
       document.querySelectorAll('.fdate-btn').forEach(function(b){
         b.onclick=function(){
@@ -931,8 +948,13 @@ function listV(a){
       });
       var des=document.getElementById('fdDesde');
       var has=document.getElementById('fdHasta');
-      if(des) des.onchange=applyF;
-      if(has) has.onchange=applyF;
+      function onFechaManual(){
+        document.querySelectorAll('.fdate-btn').forEach(function(x){x.classList.remove('active');});
+        mostrarToast('Cargando rango...');
+        cargarRango(0, applyF);
+      }
+      if(des) des.onchange=onFechaManual;
+      if(has) has.onchange=onFechaManual;
       // Default: Todos so all novedades show
       var todBtn=document.getElementById('fdTodo');
       if(todBtn){
