@@ -516,6 +516,20 @@ document.getElementById('contentArea').addEventListener('click', function(e){
   }
   var repBtn=e.target.closest('#dashBtnRep');
   if(repBtn){reportesV(document.getElementById('contentArea'));return;}
+  // Dashboard date filters
+  var dfBtn=e.target.closest('#dashFHoy,#dashFSem,#dashFMes,#dashFTodo');
+  if(dfBtn){
+    document.querySelectorAll('#dashFHoy,#dashFSem,#dashFMes,#dashFTodo').forEach(function(b){b.classList.remove('active');});
+    dfBtn.classList.add('active');
+    var all=window._allNovs||novs;
+    var hoy2=new Date(); hoy2.setHours(0,0,0,0); var hoyT=hoy2.getTime();
+    if(dfBtn.id==='dashFHoy'){novs=all.filter(function(n){return !n.creadoEn||n.creadoEn>=hoyT;});}
+    else if(dfBtn.id==='dashFSem'){var lu=new Date(hoy2);lu.setDate(hoy2.getDate()-hoy2.getDay()+1);novs=all.filter(function(n){return !n.creadoEn||n.creadoEn>=lu.getTime();});}
+    else if(dfBtn.id==='dashFMes'){var pm=new Date(hoy2.getFullYear(),hoy2.getMonth(),1);novs=all.filter(function(n){return !n.creadoEn||n.creadoEn>=pm.getTime();});}
+    else{novs=all;}
+    refr('dashboard');
+    return;
+  }
   var bb=e.target.closest('#btnBackDash,#btnBackDashForm');
   if(bb){showV('dashboard');return;}
   var nc=e.target.closest('.nov-card[data-novid],.dash-nov-card[data-novid]');
@@ -551,14 +565,20 @@ function startL(){
       '</div>';
     // Animate loading bar
     setTimeout(function(){var b=document.getElementById('loadBar');if(b)b.style.width='20%';var m=document.getElementById('loadMsg');if(m)m.textContent='Verificando credenciales...';},300);
-    setTimeout(function(){var b=document.getElementById('loadBar');if(b)b.style.width='50%';var m=document.getElementById('loadMsg');if(m)m.textContent='Descargando registros recientes...';},800);
+    setTimeout(function(){var b=document.getElementById('loadBar');if(b)b.style.width='50%';var m=document.getElementById('loadMsg');if(m)m.textContent='Cargando registros de hoy...';},800);
     setTimeout(function(){var b=document.getElementById('loadBar');if(b)b.style.width='75%';},1500);
   }
 
-  // Load last 50 first for fast initial render
-  var q50=window._q(window._col(window._db,'novedades'),window._ord('creadoEn','desc'),window._lim(50));
+  // Load only TODAY's records first for fast initial render
+  var hoy=new Date();
+  hoy.setHours(0,0,0,0);
+  var hoyTs=hoy.getTime();
+  var q50=window._q(window._col(window._db,'novedades'),window._ord('creadoEn','desc'),window._lim(100));
   var unsubFast=window._snap(q50,function(snap){
-    novs=snap.docs.map(function(d){var data=d.data();var light=Object.assign({},data,{_id:d.id});delete light.fotos;delete light.fotosOL;delete light.fotosEntrega;light._hasFotos=!!(data.fotos&&data.fotos.length||data.fotosOL&&data.fotosOL.length||data.fotosEntrega&&data.fotosEntrega.length);light._fotosLoaded=false;return light;});
+    // Filter to show only today's records initially
+    var todayStart=new Date(); todayStart.setHours(0,0,0,0);
+    var todayTs=todayStart.getTime();
+    novs=snap.docs.map(function(d){var data=d.data();var light=Object.assign({},data,{_id:d.id});delete light.fotos;delete light.fotosOL;delete light.fotosEntrega;light._hasFotos=!!(data.fotos&&data.fotos.length||data.fotosOL&&data.fotosOL.length||data.fotosEntrega&&data.fotosEntrega.length);light._fotosLoaded=false;return light;}).filter(function(n){return !n.creadoEn||n.creadoEn>=todayTs;});
     // Update progress bar
     var b=document.getElementById('loadBar'); if(b) b.style.width='85%';
     var m=document.getElementById('loadMsg'); if(m) m.textContent='Cargando vista inicial...';
@@ -573,7 +593,11 @@ function startL(){
       var qAll=window._q(window._col(window._db,'novedades'),window._ord('creadoEn','desc'));
       unsub=window._snap(qAll,function(snapAll){
         var prev=novs.length;
-        novs=snapAll.docs.map(function(d){var data=d.data();var light=Object.assign({},data,{_id:d.id});delete light.fotos;delete light.fotosOL;delete light.fotosEntrega;light._hasFotos=!!(data.fotos&&data.fotos.length||data.fotosOL&&data.fotosOL.length||data.fotosEntrega&&data.fotosEntrega.length);light._fotosLoaded=false;return light;});
+        var allNovs=snapAll.docs.map(function(d){var data=d.data();var light=Object.assign({},data,{_id:d.id});delete light.fotos;delete light.fotosOL;delete light.fotosEntrega;light._hasFotos=!!(data.fotos&&data.fotos.length||data.fotosOL&&data.fotosOL.length||data.fotosEntrega&&data.fotosEntrega.length);light._fotosLoaded=false;return light;});
+        // Default view: today only, but keep all in memory
+        var todayStart2=new Date(); todayStart2.setHours(0,0,0,0);
+        novs=allNovs.filter(function(n){return !n.creadoEn||n.creadoEn>=todayStart2.getTime();});
+        window._allNovs=allNovs; // Keep all records for filtering
         // Show toast if more records loaded
         if(novs.length>prev){
           mostrarToast(novs.length+' registros cargados');
@@ -789,7 +813,13 @@ function dash(a){
       novs.slice(0,4).map(card).join('')+
       (novs.length>4?'<div class="dash-ver-mas" id="dashVerMas">Ver todos los casos &rarr;</div>':'')
     :
-      '<div class="dash-section-title">'+
+      '<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">'+
+      '<button class="rdb-period-btn active" id="dashFHoy" style="font-size:11px;padding:5px 12px">Hoy</button>'+
+      '<button class="rdb-period-btn" id="dashFSem" style="font-size:11px;padding:5px 12px">Esta semana</button>'+
+      '<button class="rdb-period-btn" id="dashFMes" style="font-size:11px;padding:5px 12px">Este mes</button>'+
+      '<button class="rdb-period-btn" id="dashFTodo" style="font-size:11px;padding:5px 12px">Todos</button>'+
+    '</div>'+
+    '<div class="dash-section-title">'+
         (misPend.length>0?'<span class="dash-pend-dot"></span>':'')+
         'Mis pendientes'+(misPend.length>0?' ('+misPend.length+')':'')+
       '</div>'+
