@@ -536,36 +536,57 @@ function startL(){
   if(!window._ready) return;
   if(unsub) unsub();
 
-  // Show loading
+  // Show loading with progress
   var ca=document.getElementById('contentArea');
   if(ca&&novs.length===0){
-    ca.innerHTML='<div style="text-align:center;padding:60px 20px">'+
-      '<div style="width:48px;height:48px;border:4px solid var(--border2);border-top-color:var(--bav-red);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px"></div>'+
-      '<div style="font-size:14px;color:var(--text2)">Cargando novedades...</div>'+
-    '</div>';
+    ca.innerHTML=
+      '<div style="text-align:center;padding:48px 20px">'+
+        '<div style="width:56px;height:56px;border:4px solid var(--border2);border-top-color:var(--bav-red);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px"></div>'+
+        '<div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px">Conectando con Bavaria DQI...</div>'+
+        '<div style="font-size:13px;color:var(--text2);margin-bottom:20px" id="loadMsg">Iniciando conexión segura</div>'+
+        '<div style="background:var(--border);border-radius:10px;height:6px;width:200px;margin:0 auto;overflow:hidden">'+
+          '<div id="loadBar" style="height:100%;background:var(--bav-red);border-radius:10px;width:0%;transition:width 0.5s ease"></div>'+
+        '</div>'+
+        '<div style="font-size:11px;color:var(--text3);margin-top:8px" id="loadCount"></div>'+
+      '</div>';
+    // Animate loading bar
+    setTimeout(function(){var b=document.getElementById('loadBar');if(b)b.style.width='20%';var m=document.getElementById('loadMsg');if(m)m.textContent='Verificando credenciales...';},300);
+    setTimeout(function(){var b=document.getElementById('loadBar');if(b)b.style.width='50%';var m=document.getElementById('loadMsg');if(m)m.textContent='Descargando registros recientes...';},800);
+    setTimeout(function(){var b=document.getElementById('loadBar');if(b)b.style.width='75%';},1500);
   }
 
   // Load last 50 first for fast initial render
   var q50=window._q(window._col(window._db,'novedades'),window._ord('creadoEn','desc'),window._lim(50));
   var unsubFast=window._snap(q50,function(snap){
-    novs=snap.docs.map(function(d){return Object.assign({},d.data(),{_id:d.id});});
-    var cur=document.querySelector('.nav-tab.active');
-    if(cur){var v=cur.id.replace('tab-',''); if(v!=='reportar') refr(v);}
-    badge();
-    unsubFast(); // Stop fast listener
-
-    // Now load ALL records in background
-    var qAll=window._q(window._col(window._db,'novedades'),window._ord('creadoEn','desc'));
-    unsub=window._snap(qAll,function(snapAll){
-      novs=snapAll.docs.map(function(d){return Object.assign({},d.data(),{_id:d.id});});
-      var cur2=document.querySelector('.nav-tab.active');
-      if(cur2){var v2=cur2.id.replace('tab-',''); if(v2!=='reportar') refr(v2);}
+    novs=snap.docs.map(function(d){var data=d.data();var light=Object.assign({},data,{_id:d.id});delete light.fotos;delete light.fotosOL;delete light.fotosEntrega;light._hasFotos=!!(data.fotos&&data.fotos.length||data.fotosOL&&data.fotosOL.length||data.fotosEntrega&&data.fotosEntrega.length);light._fotosLoaded=false;return light;});
+    // Update progress bar
+    var b=document.getElementById('loadBar'); if(b) b.style.width='85%';
+    var m=document.getElementById('loadMsg'); if(m) m.textContent='Cargando vista inicial...';
+    var ct=document.getElementById('loadCount'); if(ct) ct.textContent=novs.length+' registros recientes listos';
+    setTimeout(function(){
+      var cur=document.querySelector('.nav-tab.active');
+      if(cur){var v=cur.id.replace('tab-',''); if(v!=='reportar') refr(v);}
       badge();
-      if(currentNovId){
-        var n=novs.find(function(x){return x._id===currentNovId;});
-        if(n) renderModal(n);
-      }
-    });
+      unsubFast();
+
+      // Now load ALL records in background with progress
+      var qAll=window._q(window._col(window._db,'novedades'),window._ord('creadoEn','desc'));
+      unsub=window._snap(qAll,function(snapAll){
+        var prev=novs.length;
+        novs=snapAll.docs.map(function(d){var data=d.data();var light=Object.assign({},data,{_id:d.id});delete light.fotos;delete light.fotosOL;delete light.fotosEntrega;light._hasFotos=!!(data.fotos&&data.fotos.length||data.fotosOL&&data.fotosOL.length||data.fotosEntrega&&data.fotosEntrega.length);light._fotosLoaded=false;return light;});
+        // Show toast if more records loaded
+        if(novs.length>prev){
+          mostrarToast(novs.length+' registros cargados');
+        }
+        var cur2=document.querySelector('.nav-tab.active');
+        if(cur2){var v2=cur2.id.replace('tab-',''); if(v2!=='reportar') refr(v2);}
+        badge();
+        if(currentNovId){
+          var n=novs.find(function(x){return x._id===currentNovId;});
+          if(n) renderModal(n);
+        }
+      });
+    },400);
   });
 }
 
@@ -955,6 +976,20 @@ function abrirNov(id){
   renderModal(n);
   document.getElementById('modalOv').style.display='block';
   document.getElementById('modalOv').scrollTop=0;
+  // Lazy load fotos
+  if(n._hasFotos&&!n._fotosLoaded){
+    fetch('https://firestore.googleapis.com/v1/projects/novedades-logistica-7c974/databases/(default)/documents/novedades/'+id)
+      .then(function(r){return r.json();})
+      .then(function(data){
+        if(!data.fields) return;
+        function pa(f){if(!f||!f.arrayValue||!f.arrayValue.values)return[];return f.arrayValue.values.map(function(v){return v.stringValue||'';}).filter(Boolean);}
+        n.fotos=pa(data.fields.fotos);
+        n.fotosOL=pa(data.fields.fotosOL);
+        n.fotosEntrega=pa(data.fields.fotosEntrega);
+        n._fotosLoaded=true;
+        if(currentNovId===id) renderModal(n);
+      }).catch(function(){});
+  }
 }
 
 function closeModal(){
@@ -1069,12 +1104,14 @@ function renderModal(n){
     '<div class="fr"><span class="fk">Reportado por</span><span class="fv">'+n.supervisorNombre+'</span></div>'+
     '<div class="fr"><span class="fk">Fecha</span><span class="fv">'+n.fecha+'</span></div>'+
     (n.obs?'<div class="fr"><span class="fk">Obs</span><span class="fv">'+n.obs+'</span></div>':'')+
-    (n.fotos&&n.fotos.length?
+    (n._hasFotos&&!n._fotosLoaded?
+      '<div class="hdiv"></div><div style="font-size:13px;color:var(--text2);display:flex;align-items:center;gap:8px;padding:8px 0"><div style="width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--bav-red);border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0"></div>Cargando evidencias...</div>'
+    :n.fotos&&n.fotos.length?
       '<div class="hdiv"></div>'+
       '<div style="font-size:14px;font-weight:700;margin-bottom:8px">Evidencias ('+n.fotos.length+')</div>'+
       '<div class="ev-grid">'+
         n.fotos.map(function(b64,fi){
-          return '<div class="foto-thumb" data-fi="'+fi+'" data-nid="'+n._id+'"><img src="'+b64+'"></div>';
+          return '<div class="foto-thumb" data-fi="'+fi+'" data-nid="'+n._id+'" data-arr="fotos"><img src="'+b64+'"></div>';
         }).join('')+
       '</div>'
     :'')+
@@ -1740,6 +1777,20 @@ function exportarExcel(){
   ws['!cols']=[{wch:12},{wch:18},{wch:18},{wch:10},{wch:14},{wch:20},{wch:8},{wch:25},{wch:9},{wch:18},{wch:12},{wch:18},{wch:30}];
   XLSX.utils.book_append_sheet(wb,ws,'Novedades DQI');
   XLSX.writeFile(wb,'Bavaria_DQI_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+
+function mostrarToast(msg){
+  var t=document.getElementById('toastMsg');
+  if(!t){
+    t=document.createElement('div');
+    t.id='toastMsg';
+    t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.8);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:9999;transition:opacity 0.3s;white-space:nowrap';
+    document.body.appendChild(t);
+  }
+  t.textContent=msg;
+  t.style.opacity='1';
+  clearTimeout(t._timer);
+  t._timer=setTimeout(function(){t.style.opacity='0';},2500);
 }
 
 function toggleNotif(){
