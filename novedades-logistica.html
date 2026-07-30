@@ -516,6 +516,8 @@ document.getElementById('contentArea').addEventListener('click', function(e){
   }
   var repBtn=e.target.closest('#dashBtnRep');
   if(repBtn){reportesV(document.getElementById('contentArea'));return;}
+  var backupBtn=e.target.closest('#btnBackupAll');
+  if(backupBtn){exportarBackup();return;}
   // Dashboard date filters
   var dfBtn=e.target.closest('#dashFHoy,#dashFSem,#dashFMes,#dashFTodo');
   if(dfBtn){
@@ -867,7 +869,7 @@ function filtrarYver(estado){
 // ── LISTA ──────────────────────────────────────────────
 function listV(a){
   var extraFechas = '';
-  {
+  if(isVerif()){
     var bf=document.createElement('div');
     bf.style.cssText='display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px';
     var row1=document.createElement('div');
@@ -908,7 +910,7 @@ function listV(a){
     '</div>'+
     '<div id="lista"></div>';
 
-  {
+  if(isVerif()){
     setTimeout(function(){
       function doFecha(p){
         var hoy=new Date();
@@ -916,28 +918,11 @@ function listV(a){
         var des=document.getElementById('fdDesde');
         var has=document.getElementById('fdHasta');
         if(!des||!has) return;
-        var hoy2=new Date(); hoy2.setHours(0,0,0,0);
-        if(p==='hoy'){
-          des.value=h;has.value=h;
-          applyF();
-        } else if(p==='semana'){
-          var lu=new Date(hoy);lu.setDate(hoy.getDate()-hoy.getDay()+1);
-          des.value=lu.getFullYear()+'-'+String(lu.getMonth()+1).padStart(2,'0')+'-'+String(lu.getDate()).padStart(2,'0');
-          has.value=h;
-          mostrarToast('Cargando semana...');
-          var luTs=new Date(hoy2); luTs.setDate(hoy2.getDate()-hoy2.getDay()+1);
-          cargarRango(luTs.getTime(), applyF);
-        } else if(p==='mes'){
-          des.value=hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0')+'-01';
-          has.value=h;
-          mostrarToast('Cargando mes...');
-          var pmTs=new Date(hoy2.getFullYear(),hoy2.getMonth(),1);
-          cargarRango(pmTs.getTime(), applyF);
-        } else {
-          des.value='';has.value='';
-          mostrarToast('Cargando historial completo...');
-          cargarRango(0, applyF);
-        }
+        if(p==='hoy'){des.value=h;has.value=h;}
+        else if(p==='semana'){var lu=new Date(hoy);lu.setDate(hoy.getDate()-hoy.getDay()+1);des.value=lu.getFullYear()+'-'+String(lu.getMonth()+1).padStart(2,'0')+'-'+String(lu.getDate()).padStart(2,'0');has.value=h;}
+        else if(p==='mes'){des.value=hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0')+'-01';has.value=h;}
+        else{des.value='';has.value='';}
+        applyF();
       }
       document.querySelectorAll('.fdate-btn').forEach(function(b){
         b.onclick=function(){
@@ -948,13 +933,8 @@ function listV(a){
       });
       var des=document.getElementById('fdDesde');
       var has=document.getElementById('fdHasta');
-      function onFechaManual(){
-        document.querySelectorAll('.fdate-btn').forEach(function(x){x.classList.remove('active');});
-        mostrarToast('Cargando rango...');
-        cargarRango(0, applyF);
-      }
-      if(des) des.onchange=onFechaManual;
-      if(has) has.onchange=onFechaManual;
+      if(des) des.onchange=applyF;
+      if(has) has.onchange=applyF;
       // Default: Todos so all novedades show
       var todBtn=document.getElementById('fdTodo');
       if(todBtn){
@@ -1010,8 +990,8 @@ function applyF(){
     fil=fil.filter(function(n){return MOT_BAV.includes(getMot(n));});
   }
 
-  // Filtro de fecha (todos los roles)
-  {
+  // Filtro de fecha para Verificador
+  if(isVerif()){
     var desde=document.getElementById('fdDesde');
     var hasta=document.getElementById('fdHasta');
     if(desde&&hasta&&desde.value){
@@ -1042,19 +1022,19 @@ function abrirNov(id){
   renderModal(n);
   document.getElementById('modalOv').style.display='block';
   document.getElementById('modalOv').scrollTop=0;
-  // Lazy load fotos
+  // Lazy load fotos using Firebase SDK
   if(n._hasFotos&&!n._fotosLoaded){
-    fetch('https://firestore.googleapis.com/v1/projects/novedades-logistica-7c974/databases/(default)/documents/novedades/'+id)
-      .then(function(r){return r.json();})
-      .then(function(data){
-        if(!data.fields) return;
-        function pa(f){if(!f||!f.arrayValue||!f.arrayValue.values)return[];return f.arrayValue.values.map(function(v){return v.stringValue||'';}).filter(Boolean);}
-        n.fotos=pa(data.fields.fotos);
-        n.fotosOL=pa(data.fields.fotosOL);
-        n.fotosEntrega=pa(data.fields.fotosEntrega);
+    var docRef=window._doc(window._db,'novedades',id);
+    window._getDocs(window._q(window._col(window._db,'novedades'),window._where('__name__','==',docRef))).then(function(snap){
+      if(snap.docs.length){
+        var data=snap.docs[0].data();
+        n.fotos=data.fotos||[];
+        n.fotosOL=data.fotosOL||[];
+        n.fotosEntrega=data.fotosEntrega||[];
         n._fotosLoaded=true;
         if(currentNovId===id) renderModal(n);
-      }).catch(function(){});
+      }
+    }).catch(function(e){console.log('Foto load error:',e);});
   }
 }
 
@@ -1583,7 +1563,10 @@ function reportesV(a){
     '<div class="rdb-table-wrap">'+
       '<div class="rdb-table-head">'+
         '<div class="rdb-table-title">Detalle de novedades</div>'+
-        '<button class="btn-export" onclick="exportarExcel()"><i class="ti ti-file-spreadsheet"></i> Exportar Excel</button>'+
+        '<div style="display:flex;gap:8px">'+
+        '<button class="btn-export" onclick="exportarExcel()"><i class="ti ti-file-spreadsheet"></i> Exportar periodo</button>'+
+        '<button class="btn-export" id="btnBackupAll" style="background:var(--bav-gold)"><i class="ti ti-database-export"></i> Backup completo</button>'+
+      '</div>'+
       '</div>'+
       '<div class="rdb-scroll"><table class="rdb-table">'+
         '<thead><tr>'+
@@ -1824,6 +1807,33 @@ function renderChartDia(labels, data){
         x:{ticks:{font:{size:10}},grid:{display:false}}
       }
     }
+  });
+}
+
+function exportarBackup(){
+  mostrarToast('Descargando backup completo...');
+  window._getDocs(window._q(window._col(window._db,'novedades'),window._ord('creadoEn','asc'))).then(function(snap){
+    var rows=[['ID','Fecha','Responsable','Placa','N Transporte','Cliente','SKU','Producto','Cantidad','Motivo','Cambio y Entrega','Estado','Observaciones','Aprobador']];
+    snap.docs.forEach(function(d){
+      var n=d.data();
+      rows.push([
+        n.id||d.id, n.fecha||'', n.responsable||n.supervisorNombre||'',
+        n.placa||'', n.nTransporte||'', n.cliente||'',
+        n.sku||'', n.producto||'', n.cantidad||'',
+        n.motivo||(n.motivos&&n.motivos[0])||'',
+        n.cambioEntrega==='si'?'Si':'No',
+        n.estado||'', n.obs||'', n.aprobador||''
+      ]);
+    });
+    var wb=XLSX.utils.book_new();
+    var ws=XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols']=[{wch:12},{wch:20},{wch:18},{wch:10},{wch:14},{wch:20},{wch:8},{wch:25},{wch:8},{wch:18},{wch:12},{wch:18},{wch:30},{wch:15}];
+    XLSX.utils.book_append_sheet(wb,ws,'Backup DQI');
+    var fecha=new Date().toISOString().slice(0,10);
+    XLSX.writeFile(wb,'Bavaria_DQI_Backup_'+fecha+'.xlsx');
+    mostrarToast('✅ Backup exportado: '+snap.docs.length+' registros');
+  }).catch(function(e){
+    mostrarToast('Error: '+e.message);
   });
 }
 
