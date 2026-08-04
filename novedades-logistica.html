@@ -975,7 +975,7 @@ function setFecha(btn,periodo){
 function applyF(){
   var filt=document.getElementById('filt'); var val=filt?filt.value:'';
   // Base list filtered by role
-  var base=novs;
+  var base=(window._allNovs&&window._allNovs.length)?window._allNovs:novs;
   if(isOL()){
     // OL only sees aprobadas (pendientes de despachar) and en_ol and cerradas
     base=novs.filter(function(n){return ['aprobado_bavaria','aprobado_facturacion','en_ol','cerrado'].includes(n.estado);});
