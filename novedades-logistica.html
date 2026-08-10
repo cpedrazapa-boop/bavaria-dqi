@@ -508,7 +508,7 @@ document.getElementById('contentArea').addEventListener('click', function(e){
     var nid=ft.getAttribute('data-nid');
     var fi=+ft.getAttribute('data-fi');
     var arrName=ft.getAttribute('data-arr')||'fotos';
-    var nov=novs.find(function(x){return x._id===nid;});
+    var nov=buscarNov(nid);
     if(nov&&nov[arrName]&&nov[arrName].length){
       abrirViewer(nov[arrName], fi);
     }
@@ -638,7 +638,7 @@ function cargarMasAllNovs(esInicial){
     if(cur2){var v2=cur2.id.replace('tab-',''); if(v2!=='reportar') refr(v2);}
     badge();
     if(currentNovId){
-      var n=novs.find(function(x){return x._id===currentNovId;});
+      var n=buscarNov(currentNovId);
       if(n) renderModal(n);
     }
   });
@@ -1055,8 +1055,18 @@ function applyF(){
 }
 
 // ── MODAL ──────────────────────────────────────────────
+// Busca una novedad por id en cualquiera de las listas cargadas en memoria
+// (hoy, todas las cargadas, o resultados de búsqueda por placa).
+function buscarNov(id){
+  var novsFull=(window._allNovs&&window._allNovs.length)?window._allNovs:null;
+  return (novsFull&&novsFull.find(function(x){return x._id===id;}))
+    ||buscarNov(id)
+    ||(window._placaSearchResults&&window._placaSearchResults.find(function(x){return x._id===id;}));
+}
+
 function abrirNov(id){
-  var n=novs.find(function(x){return x._id===id;}); if(!n)return;
+  var n=buscarNov(id);
+  if(!n)return;
   currentNovId=id;
   renderModal(n);
   document.getElementById('modalOv').style.display='block';
@@ -1095,7 +1105,7 @@ document.getElementById('modalBox').addEventListener('click',function(e){
   var arrName=ft.getAttribute('data-arr')||'fotos';
   // If no data-nid, use currentNovId
   var id=nid||currentNovId;
-  var nov=novs.find(function(x){return x._id===id;});
+  var nov=buscarNov(id);
   if(nov&&nov[arrName]&&nov[arrName].length){
     abrirViewer(nov[arrName],fi);
   } else if(nov&&nov.fotos&&nov.fotos.length){
@@ -1239,7 +1249,7 @@ function renderModal(n){
 async function validar(fid,mot,dec){
   var com=document.getElementById('mCom')?document.getElementById('mCom').value.trim():'';
   if(dec==='rechazado'&&!com){alert('Escribe el motivo del rechazo.');return;}
-  var n=novs.find(function(x){return x._id===fid;}); if(!n)return;
+  var n=buscarNov(fid); if(!n)return;
   var nuevoEst=dec==='rechazado'?'rechazado':getEstAprobado(mot);
   var quien=RL[role];
   var tl=(n.tl||[]).concat([{a:dec==='rechazado'?('Rechazado por '+quien):('Aprobado por '+quien),por:quien,ts:ts(),n:com,c:dec==='rechazado'?'rojo':'verde'}]);
@@ -1263,7 +1273,7 @@ async function olEntregaRuta(fid,supRole,cliente){
   var rem=document.getElementById('mRem')?document.getElementById('mRem').value.trim():'';
   var nota=document.getElementById('mOLnota')?document.getElementById('mOLnota').value.trim():'';
   if(!rem){alert('Ingresa la placa del vehiculo.');return;}
-  var n=novs.find(function(x){return x._id===fid;}); if(!n)return;
+  var n=buscarNov(fid); if(!n)return;
   var tl=(n.tl||[]).concat([{a:'OL entrego producto al Supervisor de Ruta',por:RL[role],ts:ts(),n:'Placa: '+rem+(nota?' | Recibe: '+nota:''),c:'teal'}]);
   var upd={estado:'en_ol',placaDespacho:rem,personaRecibe:nota,tl:tl};
   if(fotosModal.length) upd.fotosOL=fotosModal.slice();
@@ -1279,7 +1289,7 @@ async function olEntregaRuta(fid,supRole,cliente){
 async function cerrar(fid,cliente){
   var sop=document.getElementById('mSop')?document.getElementById('mSop').value.trim():'';
   if(!sop){alert('Ingresa el soporte de recibido del cliente.');return;}
-  var n=novs.find(function(x){return x._id===fid;}); if(!n)return;
+  var n=buscarNov(fid); if(!n)return;
   var tl=(n.tl||[]).concat([{a:'Entregado al cliente y novedad cerrada',por:RL[role],ts:ts(),n:'Soporte: '+sop,c:'verde'}]);
   var upd={estado:'cerrado',soporteCliente:sop,tl:tl};
   if(fotosModal.length) upd.fotosEntrega=fotosModal.slice();
