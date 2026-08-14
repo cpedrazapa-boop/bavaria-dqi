@@ -1240,8 +1240,10 @@ function renderModal(n){
     document.getElementById('mBtnRec').onclick=function(){validar(n._id,mo,'rechazado');};
   } else if(puedeOL){
     document.getElementById('mBtnOL').onclick=function(){olEntregaRuta(n._id,n.supervisorUsername,n.cliente);};
+    wiredFotos('mFotoZoneOL','mFotoInputOL','mFotoGridOL','fotosModal');
   } else if(puedeCerrar){
     document.getElementById('mBtnCerr').onclick=function(){cerrar(n._id,n.cliente);};
+    wiredFotos('mFotoZoneRuta','mFotoInputRuta','mFotoGridRuta','fotosModal');
   }
 }
 
