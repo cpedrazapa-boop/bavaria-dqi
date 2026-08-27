@@ -620,16 +620,20 @@ function startL(){
 }
 
 // Carga (o amplía) window._allNovs de a bloques de 50, en vez de traer todo de una vez.
+// Excepción: el rol Comercial son pocos casos (solo "cambio y entrega"), así que se
+// consultan directo a Firestore y se traen TODOS de una vez, sin paginar.
 window._allNovsLimit = window._allNovsLimit || 50;
 function cargarMasAllNovs(esInicial){
   if(unsub) unsub();
-  var qAll=window._q(window._col(window._db,'novedades'),window._ord('creadoEn','desc'),window._lim(window._allNovsLimit));
+  var qAll = isComercial()
+    ? window._q(window._col(window._db,'novedades'),window._where('cambioEntrega','==','si'),window._ord('creadoEn','desc'))
+    : window._q(window._col(window._db,'novedades'),window._ord('creadoEn','desc'),window._lim(window._allNovsLimit));
   unsub=window._snap(qAll,function(snapAll){
     var prev=novs.length;
     var allNovs=snapAll.docs.map(function(d){var data=d.data();var light=Object.assign({},data,{_id:d.id});delete light.fotos;delete light.fotosOL;delete light.fotosEntrega;light._hasFotos=!!(data.fotos&&data.fotos.length||data.fotosOL&&data.fotosOL.length||data.fotosEntrega&&data.fotosEntrega.length);light._fotosLoaded=false;return light;});
     window._allNovs=allNovs;
-    // ¿Hay probablemente más registros por cargar?
-    window._allNovsHasMore = allNovs.length>=window._allNovsLimit;
+    // ¿Hay probablemente más registros por cargar? (Comercial trae todo de una, nunca hay "más")
+    window._allNovsHasMore = isComercial()?false:allNovs.length>=window._allNovsLimit;
     if(esInicial){
       // Default view: today only
       var todayStart2=new Date(); todayStart2.setHours(0,0,0,0);
