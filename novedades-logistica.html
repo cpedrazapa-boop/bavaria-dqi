@@ -316,7 +316,8 @@ const RL = {
   facturacion:    'Facturacion',
   ol:             'Supervisor OL',
   facturacion_ol: 'Facturacion / OL',
-  verificador:    'Verificador'
+  verificador:    'Verificador',
+  comercial:      'Comercial'
 };
 
 // ESTADOS Y SU ETIQUETA
@@ -348,6 +349,9 @@ function isB(){return role==='bavaria';}
 function isF(){return role==='facturacion'||role==='facturacion_ol';}
 function isOL(){return role==='ol'||role==='facturacion_ol';}
 function isVerif(){return role==='verificador';}
+function isComercial(){return role==='comercial';}
+// Vista de solo lectura (sin acciones): Verificador ve todo, Comercial solo cambio y entrega
+function isSoloLectura(){return isVerif()||isComercial();}
 
 function getMot(n){ return n.motivo||(n.motivos&&n.motivos[0])||''; }
 function getAprobador(mot){ return MOT_BAV.includes(mot)?'bavaria':'facturacion'; }
@@ -743,8 +747,8 @@ function dash(a){
     :'';
 
   // Role greeting
-  var roleColor={ruta:'var(--amber)',bavaria:'var(--blue)',facturacion:'var(--green)',ol:'var(--teal)',verificador:'var(--gray-text)'};
-  var roleIcon={ruta:'ti-route',bavaria:'ti-building-warehouse',facturacion:'ti-receipt',ol:'ti-package',verificador:'ti-eye'};
+  var roleColor={ruta:'var(--amber)',bavaria:'var(--blue)',facturacion:'var(--green)',ol:'var(--teal)',verificador:'var(--gray-text)',comercial:'var(--gray-text)'};
+  var roleIcon={ruta:'ti-route',bavaria:'ti-building-warehouse',facturacion:'ti-receipt',ol:'ti-package',verificador:'ti-eye',comercial:'ti-briefcase'};
   var color=roleColor[role]||'var(--blue)';
   var icon=roleIcon[role]||'ti-user';
 
@@ -847,10 +851,13 @@ function dash(a){
     alertaB+
     acciones+
     statsHtml+
-    (isVerif()?
-      '<div class="dash-section-title">Resumen reciente</div>'+
-      novs.slice(0,4).map(card).join('')+
-      (novs.length>4?'<div class="dash-ver-mas" id="dashVerMas">Ver todos los casos &rarr;</div>':'')
+    (isSoloLectura()?
+      (function(){
+        var novsView=isComercial()?novs.filter(function(n){return n.cambioEntrega==='si';}):novs;
+        return '<div class="dash-section-title">Resumen reciente</div>'+
+          novsView.slice(0,4).map(card).join('')+
+          (novsView.length>4?'<div class="dash-ver-mas" id="dashVerMas">Ver todos los casos &rarr;</div>':'');
+      })()
     :
       '<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">'+
       '<button class="rdb-period-btn active" id="dashFHoy" style="font-size:11px;padding:5px 12px">Hoy</button>'+
@@ -892,7 +899,7 @@ function filtrarYver(estado){
 // ── LISTA ──────────────────────────────────────────────
 function listV(a){
   var extraFechas = '';
-  if(isVerif()){
+  if(isSoloLectura()){
     var bf=document.createElement('div');
     bf.style.cssText='display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px';
     var row1=document.createElement('div');
@@ -934,7 +941,7 @@ function listV(a){
     '</div>'+
     '<div id="lista"></div>';
 
-  if(isVerif()){
+  if(isSoloLectura()){
     setTimeout(function(){
       function doFecha(p){
         var hoy=new Date();
@@ -1000,6 +1007,10 @@ function applyF(){
   var filt=document.getElementById('filt'); var val=filt?filt.value:'';
   // Base list filtered by role
   var base=(window._allNovs&&window._allNovs.length)?window._allNovs:novs;
+  if(isComercial()){
+    // Comercial solo ve casos de "Cambio y entrega" (mano a mano)
+    base=base.filter(function(n){return n.cambioEntrega==='si';});
+  }
   if(isOL()){
     // OL only sees aprobadas (pendientes de despachar) and en_ol and cerradas
     base=base.filter(function(n){return ['aprobado_bavaria','aprobado_facturacion','en_ol','cerrado'].includes(n.estado);});
@@ -1028,8 +1039,8 @@ function applyF(){
     fil=fil.filter(function(n){return MOT_BAV.includes(getMot(n));});
   }
 
-  // Filtro de fecha para Verificador
-  if(isVerif()){
+  // Filtro de fecha para Verificador y Comercial
+  if(isSoloLectura()){
     var desde=document.getElementById('fdDesde');
     var hasta=document.getElementById('fdHasta');
     if(desde&&hasta&&desde.value){
@@ -1128,7 +1139,7 @@ function renderModal(n){
   var puedeCerrar = isR() && n.estado==='en_ol';
   // Bavaria solo mira casos de Fact
   var bavSoloVe   = isB() && n.estado==='pendiente' && MOT_FACT.includes(mo);
-  var soloVer     = isVerif();
+  var soloVer     = isSoloLectura();
 
   var actHtml='';
   if(puedeBApro||puedeFApro){
@@ -1173,7 +1184,7 @@ function renderModal(n){
   } else if(bavSoloVe){
     actHtml='<div class="hdiv"></div><div class="wbox"><i class="ti ti-info-circle"></i> Este caso es de <strong>Faltante Carga / Trocado</strong> &mdash; lo aprueba <strong>Facturaci&oacute;n</strong>. Solo puedes visualizarlo.</div>';
   } else if(soloVer){
-    actHtml='<div class="hdiv"></div><div class="wbox"><i class="ti ti-eye"></i> Modo Verificador &mdash; solo visualizaci&oacute;n.</div>';
+    actHtml='<div class="hdiv"></div><div class="wbox"><i class="ti ti-eye"></i> Modo '+RL[role]+' &mdash; solo visualizaci&oacute;n.</div>';
   }
 
   var html=
