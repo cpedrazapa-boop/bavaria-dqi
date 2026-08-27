@@ -724,17 +724,18 @@ function card(n){
 
 // ── DASHBOARD ──────────────────────────────────────────
 function dash(a){
-  var tot=novs.length;
-  var baseOL=novs.filter(function(n){return ['aprobado_bavaria','aprobado_facturacion','en_ol','cerrado'].includes(n.estado);});
+  var novsBase = isComercial() ? ((window._allNovs&&window._allNovs.length)?window._allNovs:[]) : novs;
+  var tot=novsBase.length;
+  var baseOL=novsBase.filter(function(n){return ['aprobado_bavaria','aprobado_facturacion','en_ol','cerrado'].includes(n.estado);});
   if(isOL()) tot=baseOL.length;
-  var pen=novs.filter(function(n){return n.estado==='pendiente';}).length;
+  var pen=novsBase.filter(function(n){return n.estado==='pendiente';}).length;
   var miPen=pen; // For stats we show total pendientes
-  if(isF()) miPen=novs.filter(function(n){return n.estado==='pendiente'&&MOT_FACT.includes(getMot(n));}).length;
-  if(isB()) miPen=novs.filter(function(n){return n.estado==='pendiente'&&MOT_BAV.includes(getMot(n));}).length;
-  var proc=novs.filter(function(n){return ['aprobado_bavaria','aprobado_facturacion','en_almacen','en_ol'].includes(n.estado);}).length;
-  if(isOL()) proc=novs.filter(function(n){return n.estado==='en_ol';}).length;
-  var cerr=novs.filter(function(n){return n.estado==='cerrado';}).length;
-  var rech=novs.filter(function(n){return n.estado==='rechazado';}).length;
+  if(isF()) miPen=novsBase.filter(function(n){return n.estado==='pendiente'&&MOT_FACT.includes(getMot(n));}).length;
+  if(isB()) miPen=novsBase.filter(function(n){return n.estado==='pendiente'&&MOT_BAV.includes(getMot(n));}).length;
+  var proc=novsBase.filter(function(n){return ['aprobado_bavaria','aprobado_facturacion','en_almacen','en_ol'].includes(n.estado);}).length;
+  if(isOL()) proc=novsBase.filter(function(n){return n.estado==='en_ol';}).length;
+  var cerr=novsBase.filter(function(n){return n.estado==='cerrado';}).length;
+  var rech=novsBase.filter(function(n){return n.estado==='rechazado';}).length;
 
   var novsFull=(window._allNovs&&window._allNovs.length)?window._allNovs:novs;
   var misPend=[];
@@ -857,10 +858,11 @@ function dash(a){
     statsHtml+
     (isSoloLectura()?
       (function(){
-        var novsView=isComercial()?novs.filter(function(n){return n.cambioEntrega==='si';}):novs;
+        var novsView=isComercial()?((window._allNovs&&window._allNovs.length)?window._allNovs:[]):novs;
         return '<div class="dash-section-title">Resumen reciente</div>'+
           novsView.slice(0,4).map(card).join('')+
-          (novsView.length>4?'<div class="dash-ver-mas" id="dashVerMas">Ver todos los casos &rarr;</div>':'');
+          (novsView.length>4?'<div class="dash-ver-mas" id="dashVerMas">Ver todos los casos &rarr;</div>':'')
+          +(isComercial()&&novsView.length===0?'<div class="empty">Sin casos de cambio y entrega registrados</div>':'');
       })()
     :
       '<div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">'+
