@@ -626,11 +626,12 @@ window._allNovsLimit = window._allNovsLimit || 50;
 function cargarMasAllNovs(esInicial){
   if(unsub) unsub();
   var qAll = isComercial()
-    ? window._q(window._col(window._db,'novedades'),window._where('cambioEntrega','==','si'),window._ord('creadoEn','desc'))
+    ? window._q(window._col(window._db,'novedades'),window._where('cambioEntrega','==','si'))
     : window._q(window._col(window._db,'novedades'),window._ord('creadoEn','desc'),window._lim(window._allNovsLimit));
   unsub=window._snap(qAll,function(snapAll){
     var prev=novs.length;
     var allNovs=snapAll.docs.map(function(d){var data=d.data();var light=Object.assign({},data,{_id:d.id});delete light.fotos;delete light.fotosOL;delete light.fotosEntrega;light._hasFotos=!!(data.fotos&&data.fotos.length||data.fotosOL&&data.fotosOL.length||data.fotosEntrega&&data.fotosEntrega.length);light._fotosLoaded=false;return light;});
+    if(isComercial()) allNovs.sort(function(a,b){return (b.creadoEn||0)-(a.creadoEn||0);});
     window._allNovs=allNovs;
     // ¿Hay probablemente más registros por cargar? (Comercial trae todo de una, nunca hay "más")
     window._allNovsHasMore = isComercial()?false:allNovs.length>=window._allNovsLimit;
