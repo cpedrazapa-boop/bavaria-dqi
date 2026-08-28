@@ -495,7 +495,7 @@ function buildNav(){
   var nav=document.getElementById('bottomNav'); nav.innerHTML='';
   var tabs=[['dashboard','layout-dashboard','Resumen'],['novedades','list-details','Novedades']];
   if(isR()) tabs.push(['reportar','circle-plus','Reportar']);
-  if(isB()) tabs.push(['reportes','chart-bar','Reportes']);
+  if(isB()||isComercial()) tabs.push(['reportes','chart-bar','Reportes']);
   tabs.forEach(function(t,i){
     var b=document.createElement('button');
     b.className='nav-tab'+(i===0?' active':''); b.id='tab-'+t[0];
@@ -786,6 +786,18 @@ function dash(a){
         '</button>'+
       '</div>'+
       (isB()?'<div class="dash-actions" style="margin-top:-4px"><button class="dash-action-btn" id="dashBtnRep" style="border-color:var(--bav-gold);color:var(--bav-gold)"><i class="ti ti-chart-bar"></i><span>Dashboard Reportes</span></button></div>':'');
+  } else if(isComercial()){
+    acciones=
+      '<div class="dash-actions">'+
+        '<button class="dash-action-btn primary" id="dashBtnNovs3">'+
+          '<i class="ti ti-list-details"></i>'+
+          '<span>Ver todos los casos</span>'+
+        '</button>'+
+        '<button class="dash-action-btn" id="dashBtnRep" style="border-color:var(--bav-gold);color:var(--bav-gold)">'+
+          '<i class="ti ti-chart-bar"></i>'+
+          '<span>Ver reportes visuales</span>'+
+        '</button>'+
+      '</div>';
   } else {
     acciones=
       '<div class="dash-actions">'+
@@ -1604,14 +1616,14 @@ function reportesV(a){
       '<button id="btnBackDash" style="background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:7px 12px;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2);flex-shrink:0"><i class="ti ti-arrow-left"></i> Inicio</button>'+
       '<div>'+
         '<div style="font-size:18px;font-weight:800;color:var(--bav-red);line-height:1">Dashboard DQI</div>'+
-        '<div style="font-size:11px;color:var(--text2);margin-top:2px">Supervisor Bavaria</div>'+
+        '<div style="font-size:11px;color:var(--text2);margin-top:2px">'+RL[role]+(isComercial()?' &mdash; Solo casos de cambio y entrega':'')+'</div>'+
       '</div>'+
     '</div>'+
     '<div class="rdb-period">'+
       '<button class="rdb-period-btn" data-p="hoy">Hoy</button>'+
       '<button class="rdb-period-btn" data-p="semana">Esta semana</button>'+
-      '<button class="rdb-period-btn active" data-p="mes">Este mes</button>'+
-      '<button class="rdb-period-btn" data-p="todo">Todos</button>'+
+      '<button class="rdb-period-btn'+(isComercial()?'':' active')+'" data-p="mes">Este mes</button>'+
+      '<button class="rdb-period-btn'+(isComercial()?' active':'')+'" data-p="todo">Todos</button>'+
     '</div>'+
     '<div class="rdb-dates">'+
       '<label>Desde:</label><input type="date" id="rdbD">'+
@@ -1634,8 +1646,8 @@ function reportesV(a){
         '<div class="rdb-table-title">Detalle de novedades</div>'+
         '<div style="display:flex;gap:8px">'+
         '<button class="btn-export" onclick="exportarExcel()"><i class="ti ti-file-spreadsheet"></i> Exportar periodo</button>'+
-        '<button class="btn-export" id="btnBackupAll" style="background:var(--bav-gold)"><i class="ti ti-database-export"></i> Backup completo</button>'+
-        '<button class="btn-export" id="btnComprimirAntiguos" style="background:#6b7280"><i class="ti ti-photo-off"></i> Comprimir +20 dias</button>'+
+        (isB()?'<button class="btn-export" id="btnBackupAll" style="background:var(--bav-gold)"><i class="ti ti-database-export"></i> Backup completo</button>':'')+
+        (isB()?'<button class="btn-export" id="btnComprimirAntiguos" style="background:#6b7280"><i class="ti ti-photo-off"></i> Comprimir +20 dias</button>':'')+
       '</div>'+
       '</div>'+
       '<div class="rdb-scroll"><table class="rdb-table">'+
@@ -1662,6 +1674,7 @@ function reportesV(a){
     };
   });
 
+  rdbPeriodo = isComercial() ? 'todo' : 'mes';
   renderReportes();
 }
 
@@ -1691,7 +1704,8 @@ function filtrarPorPeriodo(arr){
 }
 
 function renderReportes(){
-  var data=filtrarPorPeriodo(novs);
+  var fuente = isComercial() ? ((window._allNovs&&window._allNovs.length)?window._allNovs:[]) : novs;
+  var data=filtrarPorPeriodo(fuente);
   var tot=data.length;
   var pen=data.filter(function(n){return n.estado==='pendiente';}).length;
   var cerr=data.filter(function(n){return n.estado==='cerrado';}).length;
@@ -1699,13 +1713,17 @@ function renderReportes(){
   var rech=data.filter(function(n){return n.estado==='rechazado';}).length;
   var cambio=data.filter(function(n){return n.cambioEntrega==='si';}).length;
 
+  var aprob=data.filter(function(n){return ['aprobado_bavaria','aprobado_facturacion'].includes(n.estado);}).length;
+
   // KPIs
   var kpis=document.getElementById('rdbKpis');
   if(kpis) kpis.innerHTML=
     kpi('ti-clipboard-list','kpi-red',tot,'Total novedades','Periodo seleccionado')+
     kpi('ti-clock','kpi-gold',pen,'Pendientes','Sin atender')+
     kpi('ti-circle-check','kpi-green',cerr,'Cerradas',Math.round(tot?cerr/tot*100:0)+'% resolucion')+
-    kpi('ti-arrows-exchange','kpi-blue',cambio,'Cambio y entrega',Math.round(tot?cambio/tot*100:0)+'% del total');
+    (isComercial()
+      ? kpi('ti-thumb-up','kpi-blue',aprob,'Aprobados',Math.round(tot?aprob/tot*100:0)+'% del total')
+      : kpi('ti-arrows-exchange','kpi-blue',cambio,'Cambio y entrega',Math.round(tot?cambio/tot*100:0)+'% del total'));
 
   // Chart motivos
   var mots={};
