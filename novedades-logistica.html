@@ -1926,7 +1926,8 @@ function exportarBackup(){
 }
 
 function exportarExcel(){
-  var data=filtrarPorPeriodo(novs);
+  var fuenteExp = isComercial() ? ((window._allNovs&&window._allNovs.length)?window._allNovs:[]) : novs;
+  var data=filtrarPorPeriodo(fuenteExp);
   var rows=[['ID','Fecha','Responsable','Placa','N Transporte','Cliente','SKU','Producto','Cantidad','Motivo','Cambio y Entrega','Estado','Observaciones']];
   data.forEach(function(n){
     rows.push([
