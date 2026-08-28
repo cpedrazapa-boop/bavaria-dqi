@@ -905,7 +905,7 @@ function filtrarYver(estado){
 // ── LISTA ──────────────────────────────────────────────
 function listV(a){
   var extraFechas = '';
-  if(isSoloLectura()){
+  if(isVerif()){
     var bf=document.createElement('div');
     bf.style.cssText='display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px';
     var row1=document.createElement('div');
@@ -947,7 +947,7 @@ function listV(a){
     '</div>'+
     '<div id="lista"></div>';
 
-  if(isSoloLectura()){
+  if(isVerif()){
     setTimeout(function(){
       function doFecha(p){
         var hoy=new Date();
